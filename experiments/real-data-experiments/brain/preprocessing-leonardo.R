@@ -14,26 +14,21 @@ library(zoo)
 library(pracma)
 setwd("~/Documents/group-CCA/")
 
-source('experiments/sparse_CCA/experiment_functions.R')
+source('experiments/experiment_functions.R')
 source('experiments/alternative_methods/SAR.R')
 source('experiments/alternative_methods/Parkhomenko.R')
 source('experiments/alternative_methods/Witten_CrossValidation.R')
 source('experiments/alternative_methods/Waaijenborg.R')
-source("elena/missing/helper.R")
-source("elena/missing/evaluation.R")
-source("elena/missing/original_CCA_impute.R")
-source("elena/gradient_descent.r")
-source("elena/iterative_cca.R")
-source("elena/reduced_rank_regression.R")
-source("elena/graph_reduced_rank_regression.R")
+source("src/reduced_rank_regression.R")
+source("src/graph_reduced_rank_regression.R")
 #store all values above diagonal of connectome matrices in matrix c
-dir = '../fMRI-data/data/'
-files = list.files("/Users/cdonnat/Documents/group-CCA/experiments/real-data/fMRI-data/data/wm_ntgtvsbl/")
+
+files = list.files("experiments/real-data/fMRI-data/data/wm_ntgtvsbl/")
 ids_length = 6
 c = c()
 c_ids = c()
 
-Y = read_csv("/Users/cdonnat/Documents/group-CCA/experiments/real-data/fMRI-data/data/cognitive_data.csv")
+Y = read_csv("experiments/real-data/fMRI-data/data/cognitive_data.csv")
 #### demean 
 prop_missing = apply(Y, 1, function(x){mean(is.na(x))})
 selected_index = which(prop_missing < 0.1)
@@ -41,20 +36,20 @@ prop_col_missing = apply(Y[selected_index, 1:74], 2, function(x){mean(is.na(x))}
 newY = Y[selected_index, 1:74]
 
 Y[is.na(Y)] = 0 #### need to replace it by the mean of the column rather
-GM_mask = readnii("/Users/cdonnat/Documents/group-CCA/experiments/real-data/fMRI-data/data/gm_mask020_bin.nii.gz")
+GM_mask = readnii("experiments/real-data/fMRI-data/data/gm_mask020_bin.nii.gz")
 GM.d = GM_mask@.Data
 GM.d <- reshape2::melt(GM.d)
 colnames(GM.d)<- c("x", "y", "z", "GM")
 
 
-atlas800 = readnii("/Users/cdonnat/Documents/group-CCA/experiments/real-data/fMRI-data/data/atlases/Schaefer2018_200Parcels_7Networks_order_FSLMNI152_2mm.nii.gz")
+atlas800 = readnii("experiments/real-data/fMRI-data/data/atlases/Schaefer2018_200Parcels_7Networks_order_FSLMNI152_2mm.nii.gz")
 atlas.d = atlas800@.Data
 atlas.d <- reshape2::melt(atlas.d)
 colnames(atlas.d)<- c("x", "y", "z", "Schaffer_group")
 dataset <- c()
 for(file in files){
   print(file)
-  t1 = readnii(paste0("/Users/cdonnat/Documents/group-CCA/experiments/real-data/fMRI-data/data/wm_ntgtvsbl/", file))
+  t1 = readnii(paste0("experiments/real-data/fMRI-data/data/wm_ntgtvsbl/", file))
   test = t1@.Data
   test[is.na(test)] = 0
   test <- reshape2::melt(test)
@@ -72,66 +67,6 @@ for(file in files){
   dataset = rbind(dataset, t)
 
 }
-
-#### find  6 nearest neighbors.
-#### This is probably the thing to do, but is currently too slow
-# positions = atlas.d %>% 
-#   filter(Schaffer_group > 0) 
-# #### Find all contacts
-# contacts <- c()
-# contacts_s <-c()
-# for (i in 1:nrow(positions)){
-#   print(i)
-#   ### Find all 6 nearest neighbor groups
-#   ind_x = which((positions$x == (positions$x[i]-1)) & (positions$y == (positions$y[i])) &(positions$z == (positions$z[i])))
-#   if (length(ind_x) >0){
-#     contacts <- rbind(contacts, c(positions$Schaffer_group[i], positions$Schaffer_group[ind_x]))
-#   }
-#   ind_x = which((positions$x == (positions$x[i]+1)) & (positions$y == (positions$y[i])) &(positions$z == (positions$z[i])))
-#   if (length(ind_x) >0){
-#     contacts <- rbind(contacts, c(positions$Schaffer_group[i], positions$Schaffer_group[ind_x]))
-#   }
-#   
-#   
-#   ind_y = which((positions$x == (positions$x[i])) & (positions$y == (positions$y[i] -1)) &(positions$z == (positions$z[i])))
-#   if (length(ind_y) >0){
-#     contacts <- rbind(contacts, c(positions$Schaffer_group[i], positions$Schaffer_group[ind_y]))
-#   }
-#   ind_y = which((positions$x == (positions$x[i])) & (positions$y == (positions$y[i] + 1)) &(positions$z == (positions$z[i])))
-#   if (length(ind_y) >0){
-#     contacts <- rbind(contacts, c(positions$Schaffer_group[i], positions$Schaffer_group[ind_y]))
-#   }
-#   
-#   ind_z = which((positions$x == (positions$x[i])) & (positions$y == (positions$y[i] )) &(positions$z == (positions$z[i]-1)))
-#   if (length(ind_z) >0){
-#     contacts <- rbind(contacts, c(positions$Schaffer_group[i], positions$Schaffer_group[ind_y]))
-#   }
-#   ind_z = which((positions$x == (positions$x[i])) & (positions$y == (positions$y[i])) &(positions$z == (positions$z[i]-1)))
-#   if (length(ind_z) >0){
-#     contacts <- rbind(contacts, c(positions$Schaffer_group[i], positions$Schaffer_group[ind_y]))
-#   }
-#   if (i %% 1000 == 0){
-#     contacts_temp = data.frame(contacts)
-#     colnames(contacts_temp) = c('C1', 'C2')
-#     contacts_temp = contacts_temp %>% group_by(C1, C2) %>% summarize(counts=n())
-#     contacts_s = rbind(contacts_s, contacts_temp)
-#     contacts = c()
-#     print(contacts_s)
-#   }
-# }
-# 
-# contacts_temp = data.frame(contacts)
-# colnames(contacts_temp) = c('C1', 'C2')
-# contacts_temp = contacts_temp %>% group_by(C1, C2) %>% summarize(counts=n())
-# contacts_s = rbind(contacts_s, contacts_temp)
-# contacts = c()
-# print(contacts_s)
-# 
-# contacts_s2 = contacts_s %>% 
-#   group_by(C1, C2) %>% 
-#   summarize(counts=n())
-# #### need to save
-# write_csv(contacts_s2, "~/Downloads/contact_brain_atlas_800.csv")
 
 positions = atlas.d %>% 
   filter(Schaffer_group > 0) %>%
@@ -168,7 +103,7 @@ comp <- components(g)
 num_components <- comp$no
 print(num_components)
 
-#threed_coordinates = read.table("/Users/cdonnat/Documents/group-CCA/experiments/real-data/fMRI-data/data/atlases/Schaefer2018_800Parcels_7Networks_order.txt", sep="\t")
+#threed_coordinates = read.table("experiments/real-data/fMRI-data/data/atlases/Schaefer2018_800Parcels_7Networks_order.txt", sep="\t")
 #colnames(threed_coordinates) <- c("id", "name", "x", "y", "z")
 
 
@@ -302,7 +237,7 @@ p <- p %>% add_trace(
 
 final$vfinal
 
-node_name = read_table("/Users/cdonnat/Dropbox/My Mac (Claire’s MacBook Pro)/Downloads/data 3/atlases/Schaefer2018_200Parcels_7Networks_order.txt",
+node_name = read_table("/Users/cdonnat/Documents/group-CCA/experiments/real-data/fMRI-data/Schaefer2018_200Parcels_7Networks_order.txt",
                       col_names = c("nb", "label", "x", "y", "z"))
 node_name$label_short <- gsub("7Networks_", "", node_name$label)
 
@@ -496,23 +431,3 @@ X.m = dataset2 %>%
 X.m = pivot_wider(X.m %>% 
                   dplyr::select(id, y, Schaffer_group), id_cols=c(id),
                   names_from=Schaffer_group, values_from=y)
-#### Should also be sparse????
-#### Let's try our Sparse CCA approach?
-#### 
-
-
-#### Let's try our Group CCA approach?
-#### correlation
-rho = (t(X)  %*% X)/nrow(X)
-#A = as_adjacency_matrix(G, sparse=FALSE)  + diag(rep(1, p))
-X_a = X %*% as_adjacency_matrix(G, sparse=FALSE)  + diag(rep(1, p)) ### does not fit into memory
-#### This makes things a little bit less sparse and we are going to need to threshold
-#### We do the CCA on the smoothed matrix
-#### Then essentially we do an 
-#### Maybe we need an extra condition
-#### This should essentially increase the signal
-#### Unfortunately, it renders things less smooth
-#### Consequently, we bet on finding the jumps
-##### We want to aggregate things by group
-sapply(unique(X$id), function(x){str_split(x, "_")[[1]][1]})
-write_csv("/Users/cdonnat/Documents/group-CCA/fMRI-data/data/all_brain_data.csv")

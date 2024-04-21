@@ -10,8 +10,6 @@ library(CVXR)
 
 
 
-
-
 CCA_group_rrr.folds<- function(X, Y, 
                                groups, 
                                Sx=NULL, Sy=NULL, kfolds=5, init,

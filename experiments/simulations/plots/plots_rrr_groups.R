@@ -3,66 +3,10 @@ library(ggplot2)
 library(pracma)
 library(tidyverse)
 theme_set(theme_bw(base_size = 14))
-setwd("~/Documents/group-CCA/elena/")
-file_list <- list.files(path = "~/Documents/group-CCA/elena/missing/results", 
+
+file_list <- list.files(path =  "experiments/simulations/results/group", 
                          pattern = "2024-group-newest_RRR_efficient_results14*", full.names = TRUE)
 results <- bind_rows(lapply(file_list, read.csv))
-# 
-# 
-# summ = results %>% group_by(n, p1, p2, r, r_pca,
-#                             nnzeros, 
-#                             overlapping_amount, noise, 
-#                             #lambda_opt,
-#                             method,
-#                             theta_strength,
-#                             normalize_diagonal,
-#                             prop_missing) %>% 
-#   summarise(distance_tot_mean = mean(distance_tot),
-#             distance_U_mean = mean(distance_U),
-#             distance_V_mean = mean(distance_V),
-#             distance_tot_q50 = quantile(distance_tot, 0.5, na.rm=TRUE),
-#             distance_tot_q25 = quantile(distance_tot, 0.75, na.rm=TRUE),
-#             distance_tot_q75 = quantile(distance_tot, 0.25, na.rm=TRUE),
-#             prediction_tot_mean= mean(prediction_tot),
-#             prediction_tot_q50 = quantile(prediction_tot, 0.5, na.rm=TRUE),
-#             prediction_tot_q25 = quantile(prediction_tot, 0.75, na.rm=TRUE),
-#             prediction_tot_q75 = quantile(prediction_tot, 0.25, na.rm=TRUE),
-#             distance_U_q50 = quantile(distance_U, 0.5, na.rm=TRUE),
-#             distance_U_q25 = quantile(distance_U, 0.75, na.rm=TRUE),
-#             distance_U_q75 = quantile(distance_U, 0.25, na.rm=TRUE),
-#             prediction_U_mean= mean(distance_U),
-#             prediction_U_q50 = quantile(distance_U, 0.5, na.rm=TRUE),
-#             prediction_U_q25 = quantile(distance_U, 0.75, na.rm=TRUE),
-#             prediction_U_q75 = quantile(distance_U, 0.25, na.rm=TRUE),
-#             distance_V_q50 = quantile(distance_V, 0.5, na.rm=TRUE),
-#             distance_V_q25 = quantile(distance_V, 0.75, na.rm=TRUE),
-#             distance_V_q75 = quantile(distance_V, 0.25, na.rm=TRUE),
-#             prediction_V_mean= mean(distance_V),
-#             prediction_V_q50 = quantile(distance_V, 0.5, na.rm=TRUE),
-#             prediction_V_q25 = quantile(distance_V, 0.75, na.rm=TRUE),
-#             prediction_V_q75 = quantile(distance_V, 0.25, na.rm=TRUE),
-#             TPR_q50 = quantile(TPR, 0.5, na.rm=TRUE),
-#             TPR_q25 = quantile(TPR, 0.75, na.rm=TRUE),
-#             TPR_q75 = quantile(TPR, 0.25, na.rm=TRUE),
-#             FPR_mean = mean(FPR, na.rm=TRUE),
-#             FPR_q50 = quantile(FPR, 0.5, na.rm=TRUE),
-#             FPR_q25 = quantile(FPR, 0.75, na.rm=TRUE),
-#             FPR_q75 = quantile(FPR, 0.25, na.rm=TRUE),
-#             FNR_mean = mean(FNR, na.rm=TRUE),
-#             FNR_q50 = quantile(FNR, 0.5, na.rm=TRUE),
-#             FNR_q25 = quantile(FNR, 0.75, na.rm=TRUE),
-#             FNR_q75 = quantile(FNR, 0.25, na.rm=TRUE),
-#             time_med = quantile(time, 0.5, na.rm=TRUE),
-#             time_mean = mean(time),
-#             counts = n()
-#             
-#   ) %>%
-#   ungroup() 
-#
-#write_csv(summ, "~/Downloads/results_groups_sparse_rrr_experiments.csv")
-
-
-summ <- read_csv( "~/Downloads/results_groups_sparse_rrr_experiments.csv")
 
 
 

@@ -3,8 +3,8 @@ library(ggplot2)
 library(pracma)
 library(tidyverse)
 theme_set(theme_bw(base_size = 14))
-setwd("~/Documents/group-CCA/elena/")
- file_list <- list.files(path = "~/Documents/group-CCA/elena/missing/results", 
+
+ file_list <- list.files(path = "experiments/simulations/results", 
                          pattern = "2024_2_newest_RRR_efficient_resultsnormalized*", full.names = TRUE)
 results <- bind_rows(lapply(file_list, read.csv))
 # 

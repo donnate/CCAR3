@@ -3,21 +3,12 @@ library(ggplot2)
 library(pracma)
 library(tidyverse)
 theme_set(theme_bw(base_size = 14))
-setwd("~/Documents/group-CCA/elena/")
-file_list <- list.files(path = "~/Documents/group-CCA/elena/group_sparse/results/", 
+
+file_list <- list.files(path = "experiments/simulations/results/group", 
                         pattern = "*.csv", full.names = TRUE)
 results <- bind_rows(lapply(file_list, read.csv))
 
-# summ = results %>% group_by(n, p1, p2, r, r_pca,
-#                             nnzeros, 
-#                            overlapping_amount, noise, 
-#                            #method_type, 
-#                            lambda_opt,
-#                            method,
-#                            theta_strength,
-#                            prop_missing) %>% 
-#   summarize_if(is.numeric, median) %>% 
-#   ungroup() 
+
 
 summ = results %>% group_by(n, p1, p2, r, r_pca,
                             nnzeros, nb_patterns,
@@ -501,89 +492,6 @@ summ_long %>% filter(p == 10, noise == 0.1) %>%
   xlab("proportion of missing values")+
   ylab("")+
   facet_grid(metric~component, labeller = labeller(component = label_both), scale = "free")
-ggsave("Plots/simulation-RRR-metrics.pdf", width = 6, height = 6)
-
-
-# #plot mse
-# summ %>% filter(p == 10, noise == 0.1) %>%
-#   ggplot(aes(prop, mses, color = method))+
-#   geom_point()+
-#   geom_ribbon(aes(ymin = mses-mses_sd, ymax = mses+mses_sd, fill = method), alpha = 0.2, color = NA)+
-#   geom_line()+
-#   xlab("mean squared error (MSE)")+
-#   ylab("correlation")+
-#   facet_wrap(~component, labeller = labeller(component = label_both))
-# ggsave("Results/simulation-RRR-mse.pdf", width = 6, height = 2.5)
-# 
-# 
-# #plot correlation
-# summ %>% filter(p == 10, noise == 1) %>%
-#   ggplot(aes(prop, cors, color = method))+
-#   geom_point()+
-#   geom_ribbon(aes(ymin = cors-cors_sd, ymax = cors+cors_sd, fill = method), alpha = 0.2, color = NA)+
-#   geom_line()+
-#   xlab("proportion of missing values")+
-#   ylab("correlation")+
-#   facet_wrap(~component, labeller = labeller(component = label_both))
-# ggsave("Results/simulation-RRR-cor.pdf", width = 6, height = 2.5)
-# 
-# #plot V and U angles
-# summ %>% filter(component %in% c(1,2,3), p == 10, noise == 0.1) %>%
-#   ggplot(aes(prop, Uangs, color = method))+
-#   geom_point()+
-#   geom_ribbon(aes(ymin = Uangs-Uangs_sd, ymax = Uangs+Uangs_sd, fill = method), alpha = 0.2, color = NA)+
-#   geom_line()+
-#   xlab("proportion of missing values")+
-#   ylab("angle between U coefficients")+
-#   facet_wrap(~component, labeller = labeller(component = label_both))
-# ggsave("Results/simulation-RRR-uangle.pdf", width = 6, height = 2.5)
-# 
-# summ %>% filter(component %in% c(1,2,3), p == 10, noise == 0.1) %>%
-#   ggplot(aes(prop, Vangs, color = method))+
-#   geom_point()+
-#   geom_ribbon(aes(ymin = Vangs-Vangs_sd, ymax = Vangs+Vangs_sd, fill = method), alpha = 0.2, color = NA)+
-#   geom_line()+
-#   xlab("proportion of missing values")+
-#   ylab("angle between V coefficients")+
-#   facet_wrap(~component, labeller = labeller(component = label_both))
-# ggsave("Results/simulation-RRR-vangle.pdf", width = 6, height = 2.5)
-
-
-#plot mse full comparison
-summ %>% filter(noise != 10) %>%
-  ggplot(aes(prop, mses, color = component, linetype = method))+
-  geom_point()+
-  geom_line()+
-  xlab("proportion of missing values")+
-  ylab("mean squared error (MSE)")+
-  facet_grid(noise~p, labeller = labeller(p = label_both, noise = label_both), scale = "free")
-ggsave("Plots/simulation-RRR-mse-full.pdf",  width = 7, height = 7)
-
-summ %>%filter(noise != 10) %>%
-  ggplot(aes(prop, cors, color = component, linetype = method))+
-  geom_point()+
-  geom_line()+
-  xlab("proportion of missing values")+
-  ylab("correlation")+
-  facet_grid(noise~p, labeller = labeller(p = label_both, noise = label_both), scale = "free")
-ggsave("Plots/simulation-RRR-cor-full.pdf", width = 7, height = 7)
-
-summ %>% filter(noise != 10) %>%
-  ggplot(aes(prop, Uangs, color = component, linetype = method))+
-  geom_point()+
-  geom_line()+
-  xlab("proportion of missing values")+
-  ylab("angle between U coefficients")+
-  facet_grid(noise~p, labeller = labeller(p = label_both, noise = label_both), scale = "free")
-ggsave("Plots/simulation-RRR-uangle-full.pdf", width = 7, height = 7)
-
-summ %>% filter(noise != 10) %>%
-  ggplot(aes(prop, Vangs, color = component, linetype = method))+
-  geom_point()+
-  geom_line()+
-  xlab("proportion of missing values")+
-  ylab("angle between V coefficients")+
-  facet_grid(noise~p, labeller = labeller(p = label_both, noise = label_both), scale = "free")
-ggsave("Plots/simulation-RRR-vangle-full.pdf", width = 7, height = 7)
+ggsave(" "experiments/simulations/results/group/plots/simulation-RRR-metrics.pdf", width = 6, height = 6)
 
 

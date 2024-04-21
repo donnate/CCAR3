@@ -3,8 +3,8 @@ library(ggplot2)
 library(pracma)
 library(tidyverse)
 theme_set(theme_bw(base_size = 14))
-setwd("~/Documents/group-CCA/elena/")
-file_list <- list.files(path = "~/Documents/group-CCA/elena/missing/results",
+
+file_list <- list.files(path =  "experiments/simulations/results/graph",
                         pattern = "2024-graph-newest_RRR_efficient_results14*", full.names = TRUE)
 results <- bind_rows(lapply(file_list, read.csv))
 
@@ -58,11 +58,6 @@ summ = results %>% group_by(n, p1, p2, r, r_pca,
 
   ) %>%
   ungroup()
-
-#write_csv(summ, "~/Downloads/results_graph_sparse_rrr_experiments.csv")
-
-
-#summ <- read_csv( "~/Downloads/results_graph_sparse_rrr_experiments.csv")
 
 unique(summ$method
        )

@@ -9,9 +9,6 @@ library(doParallel)
 library(CVXR)
 
 
-
-
-
 CCA_graph_rrr.folds<- function(X, Y, 
                                Gamma, 
                                Sx=NULL, Sy=NULL, kfolds=5,
@@ -94,21 +91,6 @@ CCA_graph_rrr.CV<- function(X, Y,
   n = nrow(X)
   p = ncol(X)
   q = ncol(Y)
-  # if(q >n){
-  #   X_temp <- X
-  #   X <- Y
-  #   Y <- X_temp
-  # }
-  # if (scale){
-  #   X <- scale(X)
-  #   Y <- scale(Y)
-  # }
-  # Sx = t(X) %*% X /n
-  # Sy = t(Y) %*% Y /n
-  # if (LW_Sy){
-  #   lw_cov <- corpcor::cov.shrink(Y)
-  #   Sy <- as.matrix(lw_cov)
-  # }
   
   if ( n <  min(q,p)){
     print("Warning!!!! Both X and Y are high dimensional, method may fail")

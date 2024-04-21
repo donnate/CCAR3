@@ -7,19 +7,15 @@ library(zoo)
 library(pracma)
 library(rrpack)
 library(corpcor)
-#setwd("~/Documents/group-CCA/")
 
-source("elena/generate_example_rrr.R")
-source('experiments/sparse_CCA/experiment_functions.R')
+source("experiments/generate_example_rrr.R")
+source('experiments/experiment_functions.R')
 source('experiments/alternative_methods/SAR.R')
 source('experiments/alternative_methods/Parkhomenko.R')
 source('experiments/alternative_methods/Witten_CrossValidation.R')
 source('experiments/alternative_methods/Waaijenborg.R')
-source("elena/missing/evaluation.R")
-#source("elena/missing/original_CCA_impute.R")
-source("elena/gradient_descent.r")
-#source("elena/iterative_cca.R")
-source("elena/reduced_rank_regression.R")
+source("src/evaluation.R")
+source("src/reduced_rank_regression.R")
 
 
 #Simulation for missing values in both X and Y
@@ -117,140 +113,7 @@ for (seed_n in seeds){
                                                     "time" = start_time_rrr[[1]]))
                 }
                 
-                # for (lambda in c(0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 
-                #                  0.25, 0.5, 1, 5, 7.5, 10, 12.5, 15, 20, 25)){
-                #   if (lambda == 0.0001){
-                #     init_coef = NULL
-                #   }
-                #   tryCatch({
-                #     #### if it's all zero then just stop
-                #     if (is.null(init_coef) || ((norm(init_coef$U, "F") > 1e-5) & (norm(init_coef$V, "F") > 1e-5))){
-                #       start_time_alt <- system.time({
-                #         alt <- CCA_rrr(X, Y, Sx=NULL, Sy=NULL,
-                #                        lambda =lambda, Kx=NULL, r, highdim=TRUE,
-                #                        solver="rrr", LW_Sy =  LW_Sy,
-                #                        scale= TRUE, rho=10, niter=1e4)
-                #       })
-                #       #init_coef = list(U = alt$U, V = alt$V)
-                #       alt$U[which(is.na(alt$U))] <- 0
-                #       alt$V[which(is.na(alt$V))] <- 0
-                #       
-                #       
-                #       result = rbind(result, data.frame(evaluate(gen$Xnew, gen$Ynew, 
-                #                                                  alt$U, alt$V, gen$u, 
-                #                                                  gen$v,
-                #                                                  Sigma_hat_sqrt = Sigma_hat_sqrt, 
-                #                                                  Sigma0_sqrt = Sigma0_sqrt), 
-                #                                         "noise" = noise, "method" = paste0("RRR-", lambda),
-                #                                         "prop_missing" = prop_missing,
-                #                                         "overlapping_amount" = overlapping_amount,
-                #                                         "nnzeros" = nnzeros,
-                #                                         "theta_strength" = strength_theta,
-                #                                         "n" = n,
-                #                                         "r_pca" = r_pca,
-                #                                         "exp" = seed * 100 + seed_n,
-                #                                         "normalize_diagonal" = normalize_diagonal,
-                #                                         "lambda_opt" = lambda,
-                #                                         "time" = start_time_alt[[1]]))
-                #       
-                #     }
-                #   }, error = function(e) {
-                #     # Print the error message
-                #     cat("Error occurred in Alt", lambda, ":", conditionMessage(e), "\n")
-                #     # Skip to the next iteration
-                #   })
-                # 
-                #   tryCatch({
-                #     #### if it's all zero then just stop
-                #     if (is.null(init_coef) || ((norm(init_coef$U, "F") > 1e-5) & (norm(init_coef$V, "F") > 1e-5))){
-                #       start_time_alt <- system.time({
-                #         alt <- CCA_rrr(X, Y, Sx=NULL, Sy=NULL,
-                #                        lambda =lambda, Kx=NULL, r,
-                #                        solver="ADMM", LW_Sy =  LW_Sy,
-                #                       rho=1, niter=1e4)
-                #       })
-                #       #init_coef = list(U = alt$U, V = alt$V)
-                #       alt$U[which(is.na(alt$U))] <- 0
-                #       alt$V[which(is.na(alt$V))] <- 0
-                #       
-                #       
-                #       result = rbind(result, data.frame(evaluate(gen$Xnew, gen$Ynew, 
-                #                                                  alt$U, alt$V, gen$u, 
-                #                                                  gen$v,
-                #                                                  Sigma_hat_sqrt = Sigma_hat_sqrt, 
-                #                                                  Sigma0_sqrt = Sigma0_sqrt), 
-                #                                         "noise" = noise, "method" = paste0("RRR-ADMM-", lambda),
-                #                                         "prop_missing" = prop_missing,
-                #                                         "overlapping_amount" = overlapping_amount,
-                #                                         "nnzeros" = nnzeros,
-                #                                         "theta_strength" = strength_theta,
-                #                                         "n" = n,
-                #                                         "r_pca" = r_pca,
-                #                                         "exp" = seed * 100 + seed_n,
-                #                                         "normalize_diagonal" = normalize_diagonal,
-                #                                         "lambda_opt" = lambda,
-                #                                         "time" = start_time_alt[[1]]))
-                #       
-                #     }
-                #   }, error = function(e) {
-                #     # Print the error message
-                #     cat("Error occurred in Alt", lambda, ":", conditionMessage(e), "\n")
-                #     # Skip to the next iteration
-                #   })
-                # }
-                # 
-                # if ( p < n && prop_missing > 0){
-                #   Ximp = data.frame(gen$Xna) %>% mutate_all(~replace_na(., mean(., na.rm = TRUE)))
-                #   Yimp = data.frame(gen$Yna) %>% mutate_all(~replace_na(., mean(., na.rm = TRUE)))
-                #   
-                #   Ximp2 = data.frame(gen$Xna) %>% mutate_all(~replace_na(., median(., na.rm = TRUE)))
-                #   Yimp2 = data.frame(gen$Yna) %>% mutate_all(~replace_na(., median(., na.rm = TRUE)))
-                #   
-                #   start_time_cca <- system.time({
-                #     cca = CCA::cc(Ximp, Yimp)
-                #   })
-                #   
-                #   result = rbind(result, data.frame(evaluate(gen$newX, gen$newY, cca$xcoef[, 1:r], 
-                #                                              cca$ycoef[, 1:r], 
-                #                                              gen$u, gen$v,
-                #                                              Sigma_hat_sqrt = Sigma_hat_sqrt, 
-                #                                              Sigma0_sqrt = Sigma0_sqrt),
-                #                                     "noise" = noise,  method = "CCA-mean",  
-                #                                     "prop_missing" = prop_missing, 
-                #                                     "overlapping_amount" = overlapping_amount,
-                #                                     "nnzeros" = nnzeros,
-                #                                     "theta_strength" = strength_theta,
-                #                                     "n" = n,
-                #                                     "r_pca" = r_pca,
-                #                                     "exp" = seed * 100 + seed_n,
-                #                                     "normalize_diagonal" = normalize_diagonal,
-                #                                     "lambda_opt" = 0,
-                #                                     "time" = start_time_cca[[1]]))
-                #   
-                #   start_time_cca2 <- system.time({
-                #     cca = CCA::cc(Ximp2, Yimp2)
-                #   })
-                #   result = rbind(result, data.frame(evaluate(gen$newX, gen$newY, cca$xcoef[, 1:r], 
-                #                                              cca$ycoef[, 1:r], 
-                #                                              gen$u, gen$v,
-                #                                              Sigma_hat_sqrt = Sigma_hat_sqrt, 
-                #                                              Sigma0_sqrt = Sigma0_sqrt),
-                #                                     "noise" = noise,  method = "CCA-median",  
-                #                                     "prop_missing" = prop_missing, 
-                #                                     "nnzeros" = nnzeros,
-                #                                     "theta_strength" = strength_theta,
-                #                                     "overlapping_amount" = overlapping_amount,
-                #                                     "r_pca" = r_pca,
-                #                                     "n" = n,
-                #                                     "exp" = seed * 100 + seed_n,
-                #                                     "normalize_diagonal" = normalize_diagonal,
-                #                                     "lambda_opt" = 0,
-                #                                     "time" = start_time_cca2[[1]]))
-                #   
-                #   
-                # }
-                
-                #### Try out alternative approaches
+
                 #### Oracle
                 print("beginning oracle")
                 set_u =  which(apply(gen$u,1, norm)>0)
@@ -384,9 +247,8 @@ for (seed_n in seeds){
                   })
                 }
                 
-                write_csv(result, paste0("elena/missing/results/2024_2_newest_RRR_efficient_results", name_exp, ".csv"))
+                write_csv(result, paste0("experiments/simulations/results/2024_2_newest_RRR_efficient_results", name_exp, ".csv"))
               
-                #write.csv(result, "missing/simulation-RRR-results-sparse.csv", row.names = F)
               }
             }
           }

@@ -3,7 +3,7 @@ library(neurobase)
 library(plotly)
 library(tidyverse)
 
-dir = 'Data/'
+dir = 'experiments/data/'
 mask_tensor = readnii(paste0(dir, 'gm_mask020_bin.nii'))
 loci_3d_coord = which(mask_tensor == 1, arr.ind = TRUE)
 colnames(loci_3d_coord) = c("x", "y", "z")

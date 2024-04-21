@@ -7,22 +7,19 @@ library(zoo)
 library(pracma)
 library(rrpack)
 library(corpcor)
-#setwd("~/Documents/group-CCA/")
 
-source("elena/generate_example_rrr.R")
-source('experiments/sparse_CCA/experiment_functions.R')
+
+source("experiments/generate_example_rrr.R")
+source('experiments/experiment_functions.R')
 source('experiments/alternative_methods/SAR.R')
 source('experiments/alternative_methods/Parkhomenko.R')
 source('experiments/alternative_methods/Witten_CrossValidation.R')
 source('experiments/alternative_methods/Waaijenborg.R')
-source("elena/missing/evaluation.R")
-#source("elena/missing/original_CCA_impute.R")
-source("elena/gradient_descent.r")
-#source("elena/iterative_cca.R")
-source("elena/reduced_rank_regression.R")
-source("elena/group_reduced_rank_regression.R")
+source("src/evaluation.R")
+source("src/gradient_descent.r")
+source("src/reduced_rank_regression.R")
+source("src/group_reduced_rank_regression.R")
 
-#Simulation for missing values in both X and Y
 
 args <- commandArgs(trailingOnly=TRUE)
 seed <- as.numeric(args[1])
@@ -91,87 +88,7 @@ for(seed_n in seeds){
                 Sigma_hat_sqrt = sqrtm(gen$S)$B
                 
                 
-                # for (lambda in c(0, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 
-                #                  0.25, 0.5, 1, 5, 7.5, 10)){
-                #   tryCatch({
-                #     #### if it's all zero then just stop
-                #       start_time_alt <- system.time({
-                #         alt <- CCA_rrr(X, Y, Sx=NULL, Sy=NULL,
-                #                        lambda =lambda, Kx=NULL, r=r,
-                #                        solver="CVXR", LW_Sy =  LW_Sy)
-                #       })
-                #       #init_coef = list(U = alt$U, V = alt$V)
-                #       alt$U[which(is.na(alt$U))] <- 0
-                #       alt$V[which(is.na(alt$V))] <- 0
-                #       
-                #       
-                #       result = rbind(result, data.frame(evaluate(gen$Xnew, gen$Ynew, 
-                #                                                  alt$U, alt$V, gen$u, 
-                #                                                  gen$v,
-                #                                                  Sigma_hat_sqrt = Sigma_hat_sqrt, 
-                #                                                  Sigma0_sqrt = Sigma0_sqrt), 
-                #                                         "noise" = noise, "method" = paste0("RRR-", lambda),
-                #                                         "prop_missing" = prop_missing,
-                #                                         "overlapping_amount" = overlapping_amount,
-                #                                         "nnzeros" = nnzeros,
-                #                                         "theta_strength" = strength_theta,
-                #                                         "n" = n,
-                #                                         "r_pca" = r_pca,
-                #                                         "exp" = seed * 100 + seed_n,
-                #                                         "normalize_diagonal" = normalize_diagonal,
-                #                                         "lambda_opt" = lambda,
-                #                                         "time" = start_time_alt[[1]]))
-                #       
-                #     
-                #   }, error = function(e) {
-                #     # Print the error message
-                #     cat("Error occurred in Alt", lambda, ":", conditionMessage(e), "\n")
-                #     # Skip to the next iteration
-                #   })
-                # 
-                #   tryCatch({
-                #       start_time_alt <- system.time({
-                #         alt <- CCA_group_rrr(X, Y, 
-                #                        groups = gen$groups,
-                #                        Sx=NULL, Sy=NULL,
-                #                        lambda =lambda, Kx=NULL, r=r,
-                #                         solver="ADMM", LW_Sy =  LW_Sy,
-                #                         scale = TRUE,
-                #                         rho=1,
-                #                         niter=1e3)
-                #       })
-                #       #init_coef = list(U = alt$U, V = alt$V)
-                #       alt$U[which(is.na(alt$U))] <- 0
-                #       alt$V[which(is.na(alt$V))] <- 0
-                #       
-                #       
-                #       result = rbind(result, data.frame(evaluate(gen$Xnew, gen$Ynew, 
-                #                                                  alt$U, alt$V, gen$u, 
-                #                                                  gen$v,
-                #                                                  Sigma_hat_sqrt = Sigma_hat_sqrt, 
-                #                                                  Sigma0_sqrt = Sigma0_sqrt), 
-                #                                         "noise" = noise, "method" = paste0("group-RRR-CVX-", lambda),
-                #                                         "prop_missing" = prop_missing,
-                #                                         "overlapping_amount" = overlapping_amount,
-                #                                         "nnzeros" = nnzeros,
-                #                                         "theta_strength" = strength_theta,
-                #                                         "n" = n,
-                #                                         "r_pca" = r_pca,
-                #                                         "exp" = seed * 100 + seed_n,
-                #                                         "normalize_diagonal" = normalize_diagonal,
-                #                                         "lambda_opt" = lambda,
-                #                                         "time" = start_time_alt[[1]]))
-                #       
-                #     
-                #   }, error = function(e) {
-                #     # Print the error message
-                #     cat("Error occurred in group", lambda, ":", conditionMessage(e), "\n")
-                #     # Skip to the next iteration
-                #   })
-                # }
                 
-                
-                #### Try out alternative approaches
                 #### Oracle
                 print("beginning oracle")
                 set_u =  which(apply(gen$u,1, norm)>0)
@@ -430,10 +347,9 @@ for(seed_n in seeds){
                     # Skip to the next iteration
                   })
                 }
-                write_csv(result, paste0("elena/missing/results/2024-group-newest_RRR_efficient_results", name_exp, ".csv"))
+                write_csv(result, paste0("experiments/simulations/results/group/2024-group-newest_RRR_efficient_results", name_exp, ".csv"))
                 print("Done loop")
               
-                #write.csv(result, "missing/simulation-RRR-results-sparse.csv", row.names = F)
               }
               print("Done inner most loop")
             }
@@ -445,60 +361,3 @@ for(seed_n in seeds){
 
   }
 }
-
-# name_exp = "NA"
-# result <- rbind(read_csv(paste0("elena/missing/results/2024-group-newest_RRR_efficient_resultsexp_new_high.csv")),
-#                 read_csv(paste0("elena/missing/results/2024-group-newest_RRR_efficient_resultsexp_new_high_q30.csv")),
-#                 read_csv(paste0("elena/missing/results/2024-group-newest_RRR_efficient_resultsexp_new_medium.csv")),
-#                 read_csv(paste0("elena/missing/results/2024-group-newest_RRR_efficient_resultsexp_new_medium_q30.csv")),
-#                 read_csv(paste0("elena/missing/results/2024-group-newest_RRR_efficient_resultsexp_new_low.csv")),
-#                 read_csv(paste0("elena/missing/results/2024-group-newest_RRR_efficient_resultsexp_new_low_q30.csv")))
-# unique(result$method)
-# res = result %>% 
-#   group_by(n, p1, p2, nnzeros, r, r_pca, method) %>%
-#   summarise_if(is.numeric,mean)
-# 
-# unique(res$method)
-# legend_order <- c("Oracle",  "FIT_SAR_CV", 
-#                   "FIT_SAR_BIC", "Witten_Perm", "Witten.CV",
-#                   "SCCA_Parkhomenko", "Waaijenborg-CV", "Waaijenborg-Author",
-#                   #"RRR-0.5" ,"RRR-7.5","RRR-10","RRR-12.5",  "RRR-20",   
-#                   "RRR-opt",    "RRR-ADMM-opt", "CVX-opt-group"   )
-# my_colors <- c( "black", "red", "indianred4",
-#                 "orange", "yellow", "chartreuse2",
-#                 "burlywood2", "burlywood4",
-#                 # "lightblue", "lightblue3","cyan", "dodgerblue", "dodgerblue4", 
-#                 "navyblue", "cyan", "dodgerblue")
-# 
-# labels_n <-    c("Oracle",  "SAR CV (Wilms et al)", 
-#                  "SAR BIC (Wilms et al)", 
-#                  "Sparse CCA, permuted\n(Witten et al)", 
-#                  "Sparse CCA with CV\n(Witten et al)",
-#                  "SCCA (Parkhomenko et al)", "Sparse CCA with CV\n(Waaijenborg et al)",
-#                  "Sparse CCA(Waaijenborg et al)",
-#                  # "RRR-0.5" ,"RRR-7.5","RRR-10","RRR-12.5",  "RRR-20",   
-#                  "RRR-CCA (this paper)",   "RRR-CCA 2(this paper)",
-#                  "RRR-CCA-group (this paper)")
-# theme_set(theme_bw(base_size = 14))
-# colnames(res)
-# 
-# result %>% filter(method == "Oracle")
-# ggplot(res,
-#        aes(x=p1, 
-#            y =distance_tot, 
-#            colour =method)) +
-#   geom_point()+
-#   geom_line()+
-#   scale_y_log10()+
-#   scale_color_manual(values = my_colors, breaks = legend_order,
-#                      labels = labels_n) 
-# 
-# ggplot(result,
-# aes(x=p1, 
-#     y = distance_tot, 
-#     colour =method)) +
-#   geom_point()+
-#   geom_line()+
-#   scale_color_manual(values = my_colors, breaks = legend_order,
-#                      labels = labels_n) +
-#   facet_grid(theta_strength~p2)
