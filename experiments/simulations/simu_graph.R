@@ -276,7 +276,7 @@ for(seed_n in seeds){
                   
                   for (method in c("FIT_SAR_CV", "FIT_SAR_BIC", "Witten_Perm",
                                    "Witten.CV", "Waaijenborg-Author", "Waaijenborg-CV",
-                                   "SCCA_Parkhomenko")){
+                                   "SCCA_Parkhomenko", "Fantope", "Chao", "SGCA")){
                     
                     print(paste0("Starting ", method))
                     

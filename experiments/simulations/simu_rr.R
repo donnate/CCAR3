@@ -208,7 +208,7 @@ for (seed_n in seeds){
                 
                 for (method in c("FIT_SAR_CV", "FIT_SAR_BIC", "Witten_Perm",
                                  "Witten.CV", "Waaijenborg-Author", "Waaijenborg-CV",
-                                 "SCCA_Parkhomenko")){
+                                 "SCCA_Parkhomenko", "Fantope", "Chao", "SGCA")){
                   
                   print(paste0("Starting ", method))
                   
@@ -248,7 +248,7 @@ for (seed_n in seeds){
                   })
                 }
                 
-                write_csv(result, paste0("experiments/simulations/results/2024_2_newest_RRR_efficient_results", name_exp, ".csv"))
+                write_csv(result, paste0("experiments/results/2024_2_newest_RRR_efficient_results", name_exp, ".csv"))
               
               }
             }
