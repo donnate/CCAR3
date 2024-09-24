@@ -4,9 +4,9 @@
 #SBATCH --output=experiments/logs/rr_array_%A_%a.out
 #SBATCH --error=experiments/logs/rr_array_%A_%a.err
 #SBATCH --array=1-5
-#SBATCH --time=12:00:00
-#SBATCH --partition=caslake
-#SBATCH --mem=10G
+#SBATCH --time=36:00:00
+#SBATCH --partition=cdonnat
+#SBATCH --mem=20G
 #SBATCH --account=pi-cdonnat
 
 # Print the task id.
