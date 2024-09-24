@@ -431,6 +431,7 @@ additional_checks <- function(X_train, Y_train, S=NULL,
   p <- p1 + p2;
   n <- nrow(X_train)
   pp <- c(p1,p2);
+  
   if(is.null(S)){
     S = cov(cbind(X_train, Y_train))
   }
@@ -516,15 +517,11 @@ additional_checks <- function(X_train, Y_train, S=NULL,
     a_estimate = rbind(a_estimate1$u[,1:rank], a_estimate1$v[,1:rank])
   }
   if(method.type=="SGCA"){
-    q = p2
-    idx1 <- 1:p
-    idx2 <- (p+ 1):(p + q)
-    Mask <- matrix(0, (p + q), (p + q))
-    Mask[idx1, idx1] <- matrix(1,p, p)
-    Mask[idx2, idx2] <- matrix(1, q, q)
-    
-    Data = cbind(X_train, Y_train)
-    S = cov(Data)
+    idx1 <- 1:p1
+    idx2 <- (p1+ 1):(p1 + p2)
+    Mask <- matrix(0, (p1 + p2), (p1 + p2))
+    Mask[idx1, idx1] <- matrix(1,p1, p1)
+    Mask[idx2, idx2] <- matrix(1, p2, p2)
     sigma0hat <- S * Mask
     
     ag <- sgca_init(A=S, B=sigma0hat, rho=0.5 * sqrt(log( p + q)/n),
