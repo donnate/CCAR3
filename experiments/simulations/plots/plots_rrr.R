@@ -88,9 +88,7 @@ labels_n <-    c("Oracle",  "SAR CV (Wilms et al)",
                  "Sparse CCA, permuted\n(Witten et al)",
                  "Sparse CCA with CV\n(Witten et al)",
                  "SCCA (Parkhomenko et al)", "Sparse CCA with CV\n(Waaijenborg et al)",
-                 "Sparse CCA(Waaijenborg et al)",
-                 # "RRR-0.5" ,"RRR-7.5","RRR-10","RRR-12.5",  "RRR-20",
-                 #"RRR-CCA (this paper, using rrr solver)",
+                 "Sparse CCA (Waaijenborg et al)",
                  "RRR-CCA (this paper)")
 theme_set(theme_bw(base_size = 18))
 
@@ -145,7 +143,8 @@ aes(x=p1,
   labs(colour="Method") + 
   scale_y_log10()+
   scale_x_log10()+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position = "top")
 
 
 ggplot(summ %>% filter( r_pca == 5, r==2,

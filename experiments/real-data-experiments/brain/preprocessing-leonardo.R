@@ -23,33 +23,33 @@ source("src/reduced_rank_regression.R")
 source("src/graph_reduced_rank_regression.R")
 #store all values above diagonal of connectome matrices in matrix c
 
-files = list.files("experiments/real-data/fMRI-data/data/wm_ntgtvsbl/")
-ids_length = 6
-c = c()
-c_ids = c()
 
-Y = read_csv("experiments/real-data/fMRI-data/data/cognitive_data.csv")
-#### demean 
+X = read_csv("~/Downloads/activation.csv")
+X = read_csv("~/Downloads/activation_groups.csv")
+Y = read_csv("~/Downloads/behavior.csv")
+files = list.files("/Users/cdonnat/Downloads/data 2/wm_ntgtvsbl/")
+
+#### Process the data -- there are missing values, and we need to scale it
 prop_missing = apply(Y, 1, function(x){mean(is.na(x))})
 selected_index = which(prop_missing < 0.1)
-prop_col_missing = apply(Y[selected_index, 1:74], 2, function(x){mean(is.na(x))})
-newY = Y[selected_index, 1:74]
+prop_col_missing = apply(Y[selected_index, ], 2, function(x){mean(is.na(x))})
+newY = Y[selected_index,]
 
-Y[is.na(Y)] = 0 #### need to replace it by the mean of the column rather
-GM_mask = readnii("experiments/real-data/fMRI-data/data/gm_mask020_bin.nii.gz")
+
+GM_mask = readnii("/Users/cdonnat/Documents/CCAR3/experiments/data/fMRI-data/data/gm_mask020_bin.nii.gz")
 GM.d = GM_mask@.Data
 GM.d <- reshape2::melt(GM.d)
 colnames(GM.d)<- c("x", "y", "z", "GM")
 
-
-atlas800 = readnii("experiments/real-data/fMRI-data/data/atlases/Schaefer2018_200Parcels_7Networks_order_FSLMNI152_2mm.nii.gz")
+setwd("/Users/cdonnat/Documents/CCAR3")
+atlas800 = readnii("/Users/cdonnat/Documents/CCAR3/experiments/data/fMRI-data/data/atlases/Schaefer2018_200Parcels_7Networks_order_FSLMNI152_2mm.nii.gz")
 atlas.d = atlas800@.Data
 atlas.d <- reshape2::melt(atlas.d)
 colnames(atlas.d)<- c("x", "y", "z", "Schaffer_group")
 dataset <- c()
 for(file in files){
   print(file)
-  t1 = readnii(paste0("experiments/real-data/fMRI-data/data/wm_ntgtvsbl/", file))
+  t1 = readnii(paste0("/Users/cdonnat/Downloads/data 2/wm_ntgtvsbl/", file))
   test = t1@.Data
   test[is.na(test)] = 0
   test <- reshape2::melt(test)
@@ -75,9 +75,6 @@ positions = atlas.d %>%
 
 # Load the igraph package
 library(igraph)
-
-# Assuming coordMatrix is your matrix of coordinates
-# coordMatrix <- matrix(c(...), ncol=3) # Example format
 
 # Compute the distance matrix
 distanceMatrix <- as.matrix(dist(positions))
@@ -114,14 +111,14 @@ print(num_components)
 #                       names_from = "Schaffer_group",
 #                       values_from = "Response" )
 #### Apply our method
-record = Y$record_id[selected_index]
+record = sapply(Y$participant_id[selected_index], function(x){sub("sub-*", "", x)})
 dataset = dataset %>%
   mutate("subject" = sub("_.*", "", id))
 
 remaining_records = intersect(unique(dataset$subject), record)
 X = pivot_wider(
   dataset %>% 
-    filter(Schaffer_group >0, subject %in% record) %>%
+    filter(Schaffer_group >0, subject %in% remaining_records) %>%
     dplyr::select(Schaffer_group, Response, subject),
   id_cols = "subject",
   names_from = c("Schaffer_group"),
@@ -136,11 +133,13 @@ X_transformed <- scale(X)
 
 newY <- newY %>%
   mutate(across(everything(), ~ifelse(is.na(.), mean(., na.rm = TRUE), .)))
+newY <- newY %>%
+  mutate(record_id  =sub("sub-*", "", participant_id)) 
 
 Y_transformed <- scale(newY %>%
-  filter(record_id %in% remaining_records) %>%
+  filter( record_id %in% remaining_records) %>%
   arrange(desc(record_id)) %>%
-  dplyr::select(-c(record_id, redcap_event_name))) 
+  dplyr::select(-c(record_id, participant_id, bio_sex))) 
 
 get_edge_incidence <- function(g, weight = 1){
   n_nodes = vcount(g)

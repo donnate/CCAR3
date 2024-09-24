@@ -53,25 +53,34 @@ soft_threshold <- function(A, lambda){
   return( A * ((abs(A) >lambda) * (1-lambda* sign(A))))
 }
 
-sgca_init_proximal <-
-  function(Sigma,Sigma0, lambda, rho, eta=0.001, nu=1,epsilon=5e-3,maxiter=1000,trace=FALSE){
+updateH <-
+  function(sqB,Gamma,nu,Pi,K){
     
-    p <- nrow(Sigma)
-    criteria <- 1e10
-    i <- 1
-    # Initialize parameters
-    oldA<-A <- diag(nrow=p, ncol=p)
-    # While loop for the iterations
-    while(criteria > epsilon && i <= maxiter){
-      print(c(i,criteria))
-      gradient <- -Sigma + rho * ( Sigma0 %*% A *  Sigma0  - Sigma0 )
-      A <- soft_threshold(A - eta * gradient, lambda)
-      criteria <- sqrt(sum((A-oldA)^2))
-      oldA <- A
-      i<- i+1
+    temp <- 1/nu * Gamma + sqB%*%Pi%*%sqB
+    temp <- (temp+t(temp))/2
+    svdtemp <- eigen(temp)
+    d <- svdtemp$values
+    p <- length(d)
+    if(sum(pmin(1,pmax(d,0)))<=K){
+      dfinal <- pmin(1,pmax(d,0))
+      return(svdtemp$vectors%*%diag(dfinal)%*%t(svdtemp$vectors))
     }
-    return(list(A=A,iteration=i,convergence=criteria))
-    
+    fr <- function(x){
+      sum(pmin(1,pmax(d-x,0)))
+    }
+    # Vincent Vu Fantope Projection
+    knots <- unique(c((d-1),d))
+    knots <- sort(knots,decreasing=TRUE)
+    temp <- which(sapply(knots,fr)<=K)
+    lentemp <- tail(temp,1)
+    a=knots[lentemp]
+    b=knots[lentemp+1]
+    fa <- sum(pmin(pmax(d-a,0),1))
+    fb <- sum(pmin(pmax(d-b,0),1))
+    theta <- a+ (b-a)*(K-fa)/(fb-fa)
+    dfinal <- pmin(1,pmax(d-theta,0))
+    res <- svdtemp$vectors%*%diag(dfinal)%*%t(svdtemp$vectors)
+    return(res)
   }
 
 

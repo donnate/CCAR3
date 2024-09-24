@@ -8,13 +8,14 @@ library(pracma)
 library(rrpack)
 library(corpcor)
 
-source("experiments/generate_example_rrr.R")
+source("experiments/simulations/generate_example_rrr.R")
 source('experiments/experiment_functions.R')
 source('experiments/alternative_methods/SAR.R')
 source('experiments/alternative_methods/Parkhomenko.R')
 source('experiments/alternative_methods/Witten_CrossValidation.R')
 source('experiments/alternative_methods/Waaijenborg.R')
-source("src/evaluation.R")
+source('experiments/alternative_methods/scca_chao.R')
+source("experiments/evaluate_results.R")
 source("src/reduced_rank_regression.R")
 
 

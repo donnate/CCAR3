@@ -26,7 +26,7 @@ source('experiments/alternative_methods/SAR.R')
 source('experiments/alternative_methods/Parkhomenko.R')
 source('experiments/alternative_methods/Witten_CrossValidation.R')
 source('experiments/alternative_methods/Waaijenborg.R')
-
+source('experiments/alternative_methods/scca_chao.R')
 setwd(wd)
 
 cv_function <- function(X, Y, 
@@ -500,6 +500,38 @@ additional_checks <- function(X_train, Y_train, S=NULL,
                                         lambda2grid=lambday[which(lambdax < 1)])
     method<-rcc(X_train,Y_train, RCC_cv$lambda1.optim, RCC_cv$lambda2.optim)
     a_estimate = rbind(method$xcoef[,1:rank], method$ycoef[,1:rank])
+    
+    
+  }
+  if(method.type=="Fantope"){
+    afant <- Fantope(X_train, Y_train, r = rank)
+    a_estimate = rbind(afant$u[,1:rank], afant$v[,1:rank])
+  }
+  if(method.type=="Chao"){
+    a_estimate1 = scca_chao(X_train, Y_train, 
+                                rho = 1,
+                                lambda_max = .1, num_lambda = 20, r = rank, niter = 500,
+                                nfold = 8, thresh = .01)
+    
+    a_estimate = rbind(a_estimate1$u[,1:rank], a_estimate1$v[,1:rank])
+  }
+  if(method.type=="SGCA"){
+    q = p2
+    idx1 <- 1:p
+    idx2 <- (p+ 1):(p + q)
+    Mask <- matrix(0, (p + q), (p + q))
+    Mask[idx1, idx1] <- matrix(1,p, p)
+    Mask[idx2, idx2] <- matrix(1, q, q)
+    
+    Data = cbind(X_train, Y_train)
+    S = cov(Data)
+    sigma0hat <- S * Mask
+    
+    ag <- sgca_init(A=S, B=sigma0hat, rho=0.5 * sqrt(log( p + q)/n),
+                    K=rank,  maxiter=1000, trace=FALSE)
+    ainit <- init_process(ag$Pi, rank) 
+    a_estimate <- sgca_tgd(A=S, B=sigma0hat,rank,ainit,k=20,lambda = 0.01, eta=0.00025,convergence=1e-6,maxiter=12000, plot = TRUE)
+
     
     
   }

@@ -2,7 +2,7 @@ library(Matrix)
 library(pracma)
 library(igraph)
 
-source("elena/graph_utils.R")
+source("src/graph_utils.R")
 
 generate_example_sparse_U <- function(n, p1, p2,
                                       r_pca = 3,

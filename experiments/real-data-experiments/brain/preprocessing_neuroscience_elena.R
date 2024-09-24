@@ -15,9 +15,9 @@ library(pracma)
 setwd("/scratch/cdonnat/group-CCA/")
 #store all values above diagonal of connectome matrices in matrix c
 
-activations <- read_csv("data/activation_neuroscience.csv")
-behaviour <- read_csv("data/behavior.csv")
-group_assignment <- readxl::read_xlsx("data/activation_groups.xlsx", col_names = FALSE)
+activations <- read_csv("/Users/cdonnat/Downloads/activation_neuroscience.csv")
+behaviour <- read_csv("/Users/cdonnat/Downloads/behavior.csv")
+group_assignment <- readxl::read_xlsx("/Users/cdonnat/Downloads/activation_groups.xlsx", col_names = FALSE)
 colnames(group_assignment) <- "group.id"
 index_groups = which(group_assignment$group.id!=0)
 activations  = activations[,c(1, 1+index_groups)]
