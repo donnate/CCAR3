@@ -315,7 +315,7 @@ for(seed_n in seeds){
                       # Skip to the next iteration
                     })
                   }
-                  write_csv(result, paste0("experiments/simulations/results/graph/results/2024-graph-newest_RRR_efficient_results", name_exp, ".csv"))
+                  write_csv(result, paste0("experiments/simulations/results/graph/2024-newest_graph_RRR_efficient_results", name_exp, ".csv"))
                   print("Done loop")
       
                 }

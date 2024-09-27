@@ -8,29 +8,27 @@ library(pracma)
 library(rrpack)
 library(corpcor)
 
-
-source("experiments/generate_example_rrr.R")
+source("experiments/simulations/generate_example_rrr.R")
 source('experiments/experiment_functions.R')
 source('experiments/alternative_methods/SAR.R')
 source('experiments/alternative_methods/Parkhomenko.R')
 source('experiments/alternative_methods/Witten_CrossValidation.R')
 source('experiments/alternative_methods/Waaijenborg.R')
-source("src/evaluation.R")
-source("src/gradient_descent.r")
+source('experiments/alternative_methods/scca_chao.R')
+source("experiments/evaluation.R")
 source("src/reduced_rank_regression.R")
-source("src/group_reduced_rank_regression.R")
-
 
 args <- commandArgs(trailingOnly=TRUE)
 seed <- as.numeric(args[1])
 print(seed)
 name_exp <- args[2]
 set.seed(seed)
-n <- as.numeric(args[3])
-strength_theta <- args[4]
+n <-500#as.numeric(args[3])
+strength_theta <- args[3]
 # <- as.numeric(300, 500, 700)
-rs <- c(as.numeric(args[6]))
+rs <- c(as.numeric(args[4]))
 ps <- as.numeric(args[5])
+qvalues <- as.numeric(args[6])
 overlaps <- c(0)
 #props <- c(0, 0.1, 0.2)
 props <- c(0)
@@ -48,7 +46,7 @@ for(seed_n in seeds){
   for(nnzeros in nnzero_values){
     for(p in c(ps)){
     #for (p in c(20, 50, 80, 100, 200, 500, 1000)){
-      for (q in c(10, 30, 50, 70)){
+      for (q in qvalues){
       #for(nnzeros in c(5, 10, 15, 20, 50)){
       for (r in rs){
         if ( strength_theta == "high"){

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=array
-#SBATCH --output=elena/logs/rr_array_%A_%a.out
-#SBATCH --error=elena/logs/rr_array_%A_%a.err
+#SBATCH --output=logs/rr_array_%A_%a.out
+#SBATCH --error=logs/rr_array_%A_%a.err
 #SBATCH --array=1-20
 #SBATCH --time=20:00:00
 #SBATCH --partition=caslake
@@ -19,5 +19,5 @@ module load R/4.2.0
 
 result_file="${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
 echo "Result file is ${result_file}"
-cd $SCRATCH/$USER/group-CCA/
-Rscript elena/simu_rr.R $SLURM_ARRAY_TASK_ID $result_file $1 $2 $3 $4
+cd $SCRATCH/$USER/CCAR3/
+Rscript experiments/simulations/simu_rr.R $SLURM_ARRAY_TASK_ID $result_file $1 $2 $3 $4

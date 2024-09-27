@@ -65,6 +65,7 @@ for (seed_n in seeds){
               for(prop_missing in props){
                 cat("seed:")
                 cat(seed, " ")
+		nnzeros = r * 5
                 print(c(n, r, r_pca, strength_theta))
                 #gen = generate(n, p, q, s, prop_missing)
                 start_time_creation <- system.time({
@@ -205,7 +206,7 @@ for (seed_n in seeds){
                   cat("Error occurred in CVXR CV:", conditionMessage(e), "\n")
                   # Skip to the next iteration
                 })
-                write_csv(result, paste0("experiments/simulations/results/2024_2_newest_RRR_efficient_results", name_exp, ".csv")) 
+                
                 for (method in c("FIT_SAR_CV", "FIT_SAR_BIC", "Witten_Perm",
                                  "Witten.CV", "Waaijenborg-Author", "Waaijenborg-CV",
                                  "SCCA_Parkhomenko", "Fantope", "Chao", "SGCA")){
