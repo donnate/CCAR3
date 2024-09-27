@@ -21,10 +21,13 @@ scca_chao <- function(X, Y, rho = 1, lambda_max = .1, num_lambda = 10, r = 2, ni
   
 }
 
-Fantope <- function(X, Y, r = 2){
+Fantope <- function(X, Y, r = 2, rho=NULL){
   p = ncol(X)
   q = ncol(Y)
   n = nrow(X)
+  if (is.null(rho)){
+    rho = 0.5 * sqrt(log( p + q)/n)
+  }
   
 
   Mask <- matrix(0, (p + q), (p + q))
@@ -37,12 +40,52 @@ Fantope <- function(X, Y, r = 2){
   S = cov(Data)
   sigma0hat <- S * Mask
   
-  ag <- sgca_init(A=S, B=sigma0hat, rho=0.5 * sqrt(log( p + q)/n),
+  ag <- sgca_init(A=S, B=sigma0hat, rho=rho,
                   K=r,  maxiter=1000, trace=FALSE)
   ainit <- init_process(ag$Pi, r) 
   test1 <- gca_to_cca(ainit, S, c(p, q))
   
   return(test1)
+}
+
+cv_Fantope <- function(X, Y, rho = 1, lambda_max = .1, num_lambda = 20, r = 2, niter = 500,
+                           nfold = 8, thresh = .01){
+  
+  ## Create folds
+  n = nrow(X)
+  cv = createFolds(1:n, k = nfold, list = T )
+  
+  ## choose penalty lambda
+  lambda_values <- rho * seq(from =0, to = 1, by = 1/num_lambda) * lambda_max
+  cv_results <- data.frame(lambda = numeric(), mse = numeric(), std = numeric())
+  
+  ## Cross validation
+  for(lambda in lambda_values) {
+    mse_values = NULL
+    
+    ## Parallelly run cross validation
+    results <- foreach(fold = cv, .export = c("group_lasso"), .packages = "SMUT") %dopar% {
+      
+      temp <- Fantope(X, Y, r = 2, rho = lambda)
+      
+      sum((X %*% temp$u - Y %*% temp$v)^2)
+      
+    }
+    
+    # Store average MSE for this lambda
+    cv_results <- rbind(cv_results, data.frame(lambda = lambda, mse = mean(unlist(results)),
+                                               std = sd(unlist(results)) ))
+    # Break the cv process if lambda is so large that B = 0
+    
+    
+  }
+  
+  min_ind = which(cv_results$mse == min(cv_results$mse) )
+  lambda = cv_results$lambda[min_ind]
+  print(lambda)
+  B = group_lasso(X, Y,  lambda, rho, niter, thresh)
+  return(B)
+  
 }
 
 
