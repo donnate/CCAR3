@@ -63,33 +63,52 @@ summ = results %>% group_by(n, p1, p2, r, r_pca,
 
   ) %>%
   ungroup()
-# write_csv(summ, "~/Downloads/results_sparse_rrr_experiments.csv")
+write_csv(summ, "~/Downloads/results_sparse_rrr_experiments_fall.csv")
 
 
-summ <- read_csv( "~/Downloads/results_sparse_rrr_experiments.csv")
+summ <- read_csv( "~/Downloads/results_sparse_rrr_experiments_fall.csv")
 
 unique(summ$method)
 
 
 
-legend_order <- c("Oracle",  "FIT_SAR_CV",
-                  "FIT_SAR_BIC", "Witten_Perm", "Witten.CV",
-                  "SCCA_Parkhomenko", "Waaijenborg-CV", "Waaijenborg-Author",
-                  "RRR-ADMM-opt"  )
-my_colors <- c( "black", "red", "indianred4",
-                "orange", "yellow", "chartreuse2",
-                "burlywood2", "burlywood4",
-                # "lightblue", "lightblue3","cyan", "dodgerblue", "dodgerblue4",
-               # "navyblue", #"cyan", 
-                "dodgerblue")
+legend_order <- c("Oracle", 
+                  "FIT_SAR_CV",
+                  #"FIT_SAR_BIC", 
+                  "Witten_Perm", 
+                  "Witten.CV",
+                  "SCCA_Parkhomenko",
+                  "Waaijenborg-CV", 
+                  "RRR-ADMM-opt",
+                  "Fantope",
+                  "SGCA",
+                  "Chao" )
+my_colors  <- c(           "#999999",
+                "#009E73",
+                #"#6EE212",
+                 "#0072B2",
+                 "#56B4E9",
+                "#F0E442",
+                "#6EE212",
+                "#000000",
+                "#D55E00",
+                "#CC79A7",
+                "#E69F00"
+                )
 
-labels_n <-    c("Oracle",  "SAR CV (Wilms et al)",
-                 "SAR BIC (Wilms et al)",
+
+labels_n <-    c("Oracle", 
+                 "SAR CV (Wilms et al)",
+                 #"SAR BIC (Wilms et al)",
                  "Sparse CCA, permuted\n(Witten et al)",
                  "Sparse CCA with CV\n(Witten et al)",
-                 "SCCA (Parkhomenko et al)", "Sparse CCA with CV\n(Waaijenborg et al)",
-                 "Sparse CCA (Waaijenborg et al)",
-                 "RRR-CCA (this paper)")
+                 "SCCA (Parkhomenko et al)",
+                 "Sparse CCA with CV\n(Waaijenborg et al)",
+                 #"Sparse CCA (Waaijenborg et al)",
+                 "RRR-CCA (this paper)",
+                 "Fantope-CCA  (Gao et al)",
+                 "SGCA (Gao and Ma)",
+                 "Sparse CCA (Gao et al)")
 theme_set(theme_bw(base_size = 18))
 
 
@@ -101,12 +120,12 @@ unique(summ$r)
 unique(summ$r_pca)
 unique(summ$p1)
 unique(summ$p2)
-unique(summ$counts)
+unique(summ$overlapping_amount)
 
 summ$theta_strength <- factor(summ$theta_strength, levels = c("high", "medium", "low"))
 
 
-ggplot(summ %>% filter( r_pca == 5, r==5,
+ggplot(summ %>% filter( r_pca == 5, r==3,
                         nnzeros==10, 
                         p1 < 3000,
                         n==500,
@@ -122,7 +141,8 @@ aes(x=p1,
   #                  colour =method), width=0.05, alpha=0.5)+
   scale_color_manual(values = my_colors, breaks = legend_order,
                      labels = labels_n) +
-  facet_grid(theta_strength~ p2, scales = "free",labeller = as_labeller(c(`10` = "q = 10",
+  facet_grid(theta_strength~ p2, scales = "free",labeller = as_labeller(c(`5` = "q = 5",
+                                                                          `10` = "q = 10",
                                                                          `30` = "q = 30",
                                                                          `50` = "q = 50",
                                                                          `80` = "q = 80",
@@ -145,6 +165,49 @@ aes(x=p1,
   scale_x_log10()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(legend.position = "top")
+
+
+ggplot(summ %>% filter( r_pca == 0, r==3,
+                        nnzeros==10, 
+                        p1 < 3000,
+                        n==500,
+                        method %in% legend_order,
+                        overlapping_amount==1
+),
+aes(x=p1, 
+    y = time_mean, 
+    colour =method)) +
+  geom_point(size=2)+
+  geom_line(linewidth=0.8)+
+  #geom_errorbar(aes(ymin=distance_tot_q975, ymax=distance_tot_q025,
+  #                  colour =method), width=0.05, alpha=0.5)+
+  scale_color_manual(values = my_colors, breaks = legend_order,
+                     labels = labels_n) +
+  facet_grid(theta_strength~ p2, scales = "free",labeller = as_labeller(c(`5` = "q = 5",
+                                                                          `10` = "q = 10",
+                                                                          `30` = "q = 30",
+                                                                          `50` = "q = 50",
+                                                                          `80` = "q = 80",
+                                                                          `100` = "n = 100",
+                                                                          `200` = "n = 200",
+                                                                          `300` = "n = 300",
+                                                                          `500` = "n = 500",
+                                                                          `high` = "High",
+                                                                          `1000` = "n = 1,000",
+                                                                          `2000` = "n = 2,000",
+                                                                          `10000` = "n = 10,000",
+                                                                          `medium` = "Medium",
+                                                                          `low` = "Low"
+                                                                          
+  ))) +
+  xlab("p") + 
+  ylab(expression("Time")) +
+  labs(colour="Method") + 
+  scale_y_log10()+
+  scale_x_log10()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position = "top")
+
 
 
 ggplot(summ %>% filter( r_pca == 5, r==2,
