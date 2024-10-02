@@ -27,9 +27,9 @@ n <-500#as.numeric(args[3])
 strength_theta <- args[3]
 # <- as.numeric(300, 500, 700)
 rs <- c(as.numeric(args[4]))
-ps <- as.numeric(args[5])
-qvalues <- as.numeric(args[6])
-overlaps <- c(0)
+ps <- c(as.numeric(args[5]))
+qvalues <- c(as.numeric(args[6]))
+overlaps <- c(1)
 #props <- c(0, 0.1, 0.2)
 props <- c(0)
 noise = 1
@@ -39,6 +39,9 @@ LW_Sy = TRUE
 nnzero_values = c(5)
 
 result = c()
+print(ps)
+print(qvalues)
+print(rs)
 for(seed_n in seeds){
   #for (n in c(100, 300, 500, 1000, 10000)){
   set.seed(seed * 100 + seed_n)
@@ -60,6 +63,10 @@ for(seed_n in seeds){
           }
         }
         for (r_pca in c(5)){
+		print("here")
+		print(p)
+		print(max(r_pca, r, nnzeros) )
+		print( (max(r_pca, r, nnzeros) < p) )
           if ( (max(r_pca, r, nnzeros) < p) ) {
             for (overlapping_amount in overlaps){
               for(prop_missing in props){

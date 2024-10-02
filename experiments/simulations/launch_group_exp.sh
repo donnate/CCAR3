@@ -14,7 +14,7 @@ for theta in $theta_strengths; do
   for p in $p_values; do
       for r in $r_values; do
 	  for q in $q_values; do
-             sbatch rrr_group_experiment.sh "$theta" "$p" "$r" "$q"
+             sbatch rrr_group_experiment.sh "$theta" "$r" "$p" "$q"
           done
     done
   done

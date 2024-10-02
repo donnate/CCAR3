@@ -3,9 +3,9 @@
 #SBATCH --job-name=array_group
 #SBATCH --output=logs/rr_grp_array_%A_%a.out
 #SBATCH --error=logs/rr_grp_array_%A_%a.err
-#SBATCH --array=1-5
+#SBATCH --array=1-1
 #SBATCH --time=24:00:00
-#SBATCH --partition=caslake
+#SBATCH --partition=cdonnat
 #SBATCH --mem=15G
 #SBATCH --account=pi-cdonnat
 
@@ -23,6 +23,6 @@ cd $SCRATCH/$USER/CCAR3/
 Rscript experiments/simulations/simu_group.R $SLURM_ARRAY_TASK_ID $result_file $1 $2 $3 $4
 
 #1: strength theta
-#2: p
-#3: r
+#2: r
+#3: p
 #4: q

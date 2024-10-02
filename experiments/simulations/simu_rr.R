@@ -111,7 +111,7 @@ for (seed_n in seeds){
                                                     "exp" = seed * 100 + seed_n,
                                                     "normalize_diagonal" = normalize_diagonal,
                                                     "lambda_opt" = 0,
-                                                    "time" = start_time_rrr[[1]]))
+                                                    "time" = start_time_rrr[[3]]))
                 }
                 
 
@@ -197,7 +197,7 @@ for (seed_n in seeds){
                                                      "exp" = seed * 100 + seed_n,
                                                      "normalize_diagonal" = normalize_diagonal,
                                                      "lambda_opt" = lambda_chosen,
-                                                     "time" = start_time_alt3[[1]]
+                                                     "time" = start_time_alt3[[3]]
                   )
                   )
                 }, error = function(e) {
@@ -206,7 +206,78 @@ for (seed_n in seeds){
                   # Skip to the next iteration
                 })
                 write_csv(result, paste0("experiments/simulations/results/2024_2_newest_RRR_efficient_results", name_exp, ".csv")) 
-                for (method in c("FIT_SAR_CV", "FIT_SAR_BIC", "Witten_Perm",
+                
+		
+		
+		print(paste0("Starting ", "Alt opt") )
+                tryCatch({
+                  start_time_alt4 <- system.time({
+                                        res_alt <- CCA_rrr(X, Y, Sx = NULL, Sy=NULL,
+                                         lambda =0.01, Kx=NULL,
+                                         r=r,
+                                         highdim=TRUE,
+                                         solver="ADMM",
+                                         LW_Sy = LW_Sy, do.scale=TRUE,
+                                         thresh = 1e-6)
+		  })
+                  res_alt$ufinal[which(is.na( res_alt$ufinal))] <- 0
+                  res_alt$vfinal[which(is.na( res_alt$vfinal))] <- 0
+                  Uhat <- res_alt$ufinal[, 1:r]
+                  Vhat <- res_alt$vfinal[, 1:r]
+                  lambda_chosen = res_alt$lambda
+                  if (sum(apply(res_alt$ufinal, 1, function(x){sum(x!=0)}) >0) <r){
+                    #### Choose another lambda
+                    while(sum(apply(Uhat, 1, function(x){sum(x!=0)}) >0) <r){
+                      lambda_chosen = lambda_chosen / 2
+                      #start_time_alt <- system.time({
+                      res_alt <- CCA_rrr(X, Y, Sx = NULL, Sy=NULL,
+                                         lambda =lambda_chosen, Kx=NULL,
+                                         r=r,
+                                         highdim=TRUE,
+                                         solver="ADMM",
+                                         LW_Sy = LW_Sy, do.scale=TRUE,
+                                         thresh = 1e-6)
+                      res_alt$U[which(is.na(res_alt$U))] <- 0
+                      res_alt$V[which(is.na(res_alt$v))] <- 0
+                      Uhat <- res_alt$U[, 1:r]
+                      Vhat <- res_alt$V[, 1:r]
+  #})
+
+                    }
+                  }
+                  result <- rbind(result, data.frame(evaluate(gen$Xnew, gen$Ynew,
+                                                              Uhat,
+                                                              Vhat[, 1:r],
+                                                              gen$u, gen$v,
+                                                              Sigma_hat_sqrt = Sigma_hat_sqrt,
+                                                              Sigma0_sqrt = Sigma0_sqrt),
+                                                     "noise" = noise,
+                                                     method = "RRR-ADMM-one-iteration",
+                                                     "prop_missing" = prop_missing,
+                                                     "nnzeros" = nnzeros,
+                                                     "theta_strength" = strength_theta,
+                                                     "overlapping_amount" = overlapping_amount,
+                                                     "r_pca" = r_pca,
+                                                     "n" = n,
+                                                     "exp" = seed * 100 + seed_n,
+                                                     "normalize_diagonal" = normalize_diagonal,
+                                                     "lambda_opt" = lambda_chosen,
+                                                     "time" = start_time_alt4[[3]]
+                  )
+                  )
+                }, error = function(e) {
+                  # Print the error message
+                  cat("Error occurred in CVXR CV:", conditionMessage(e), "\n")
+                  # Skip to the next iteration
+                })
+                write_csv(result, paste0("experiments/simulations/results/2024_2_newest_RRR_efficient_results", name_exp, ".csv"))
+
+
+
+
+
+		
+		for (method in c("FIT_SAR_CV", "FIT_SAR_BIC", "Witten_Perm",
                                  "Witten.CV", "Waaijenborg-Author", "Waaijenborg-CV",
                                  "SCCA_Parkhomenko", "Fantope", "Chao", "SGCA")){
                   
@@ -238,7 +309,7 @@ for (seed_n in seeds){
                                                        "exp" = seed * 100 + seed_n,
                                                        "normalize_diagonal" = normalize_diagonal,
                                                        "lambda_opt" = 0,
-                                                       "time" = start_time_additional_method[[1]]
+                                                       "time" = start_time_additional_method[[3]]
                     )
                     )
                   }, error = function(e) {
