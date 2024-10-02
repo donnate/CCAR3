@@ -4,8 +4,8 @@ library(pracma)
 library(tidyverse)
 theme_set(theme_bw(base_size = 14))
 
- file_list <- list.files(path = "experiments/simulations/results", 
-                         pattern = "2024_2_newest_RRR_efficient_resultsnormalized*", full.names = TRUE)
+file_list <- list.files(path = "experiments/simulations/results", 
+                        pattern = "2024_2_newest_RRR_efficient_resultsnormalized*", full.names = TRUE)
 results <- bind_rows(lapply(file_list, read.csv))
 # 
 # 
@@ -60,7 +60,7 @@ summ = results %>% group_by(n, p1, p2, r, r_pca,
             time_med = quantile(time, 0.5, na.rm=TRUE),
             time_mean = mean(time),
             counts = n()
-
+            
   ) %>%
   ungroup()
 write_csv(summ, "~/Downloads/results_sparse_rrr_experiments_fall.csv")
@@ -84,17 +84,17 @@ legend_order <- c("Oracle",
                   "SGCA",
                   "Chao" )
 my_colors  <- c(           "#999999",
-                "#009E73",
-                #"#6EE212",
-                 "#0072B2",
-                 "#56B4E9",
-                "#F0E442",
-                "#6EE212",
-                "#000000",
-                "#D55E00",
-                "#CC79A7",
-                "#E69F00"
-                )
+                           "#009E73",
+                           #"#6EE212",
+                           "#0072B2",
+                           "#56B4E9",
+                           "#F0E442",
+                           "#6EE212",
+                           "#000000",
+                           "#D55E00",
+                           "#CC79A7",
+                           "#E69F00"
+)
 
 
 labels_n <-    c("Oracle", 
@@ -130,7 +130,6 @@ ggplot(summ %>% filter( r_pca == 5, r==3,
                         ((p2==5) & p1 < 2000)| p1<3000,
                         p2!=10,
                         n==500,
-                        method %in% legend_order,
                         overlapping_amount==1
 ),
 aes(x=p1, 
@@ -144,20 +143,20 @@ aes(x=p1,
                      labels = labels_n) +
   facet_grid(theta_strength~ p2, scales = "free",labeller = as_labeller(c(`5` = "q = 5",
                                                                           `10` = "q = 10",
-                                                                         `30` = "q = 30",
-                                                                         `50` = "q = 50",
-                                                                         `80` = "q = 80",
-                                                                         `100` = "n = 100",
-                                                                         `200` = "n = 200",
-                                                                         `300` = "n = 300",
-                                                                         `500` = "n = 500",
-                                                                         `high` = "High",
-                                                                         `1000` = "n = 1,000",
-                                                                         `2000` = "n = 2,000",
-                                                                         `10000` = "n = 10,000",
-                                                                         `medium` = "Medium",
-                                                                         `low` = "Low"
-                                                                         
+                                                                          `30` = "q = 30",
+                                                                          `50` = "q = 50",
+                                                                          `80` = "q = 80",
+                                                                          `100` = "n = 100",
+                                                                          `200` = "n = 200",
+                                                                          `300` = "n = 300",
+                                                                          `500` = "n = 500",
+                                                                          `high` = "High",
+                                                                          `1000` = "n = 1,000",
+                                                                          `2000` = "n = 2,000",
+                                                                          `10000` = "n = 10,000",
+                                                                          `medium` = "Medium",
+                                                                          `low` = "Low"
+                                                                          
   ))) +
   xlab("p") + 
   ylab(expression("Subspace Distance")) +
@@ -214,10 +213,11 @@ aes(x=n,
 ggplot(summ %>% filter( r_pca == 5, r==3,
                         nnzeros==10, 
                         n==500,
+                        method %in% c("Chao", "SGCA", "Fantope"),
                         p2==80,
                         theta_strength == "medium",
                         p1<3000,
-                        method %in% legend_order,
+                        #method %in% legend_order,
                         overlapping_amount==1
 ),
 aes(x=p1, 
@@ -225,8 +225,8 @@ aes(x=p1,
     colour =method)) +
   geom_point(size=2)+
   geom_line(linewidth=0.8)+
-  geom_errorbar(aes(ymin=distance_tot_q975, ymax=distance_tot_q025,
-                    colour =method), width=0.05, alpha=0.5)+
+  #geom_errorbar(aes(ymin=distance_tot_q975, ymax=distance_tot_q025,
+  #                  colour =method), width=0.05, alpha=0.5)+
   scale_color_manual(values = my_colors, breaks = legend_order,
                      labels = labels_n) +
   facet_grid(theta_strength~ p2, scales = "free",labeller = as_labeller(c(`5` = "q = 5",
@@ -256,9 +256,9 @@ aes(x=p1,
   theme(legend.position = "top")
 
 test = summ %>% filter( r_pca == 5, r==3,
-                 nnzeros==10, 
-                 p1 == 1000,
-                 n==500,
+                        nnzeros==10, 
+                        p1 == 1000,
+                        n==500,
 )
 
 ggplot(summ %>% filter( r_pca == 5, r==2,
@@ -421,18 +421,18 @@ ggplot(summ %>% filter( r_pca == r_pca,
                         nnzeros==5,
                         str_detect(method, "group-RRR"), !str_detect(method, "opt")),
        aes(x=lambda, 
-       y = distance_tot_q50, 
-       colour ="group")) +
+           y = distance_tot_q50, 
+           colour ="group")) +
   geom_point()+
   geom_line() +
   geom_point(data = summ %>% filter( r_pca == r_pca, 
-                                      nnzeros==5,
-                                      str_detect(method, "RRR"), 
-                                      !str_detect(method, "opt"),
-                                      !str_detect(method, "CVX")),
-                     aes(x=lambda, 
-                         y = distance_tot_q50, 
-                         colour ="RRR"))+
+                                     nnzeros==5,
+                                     str_detect(method, "RRR"), 
+                                     !str_detect(method, "opt"),
+                                     !str_detect(method, "CVX")),
+             aes(x=lambda, 
+                 y = distance_tot_q50, 
+                 colour ="RRR"))+
   facet_grid(theta_strength~ p1 + n + nnzeros, scales = "free") +
   xlab("lambda") + 
   ylab(expression("Subspace Distance")) +
@@ -440,10 +440,10 @@ ggplot(summ %>% filter( r_pca == r_pca,
   scale_y_log10()+
   scale_x_log10()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-  
 
-  geom_errorbar(aes(ymin=distance_tot_q25, ymax=distance_tot_q75,
-                    colour =method), width=0.05)+
+
+geom_errorbar(aes(ymin=distance_tot_q25, ymax=distance_tot_q75,
+                  colour =method), width=0.05)+
   scale_color_manual(values = my_colors, breaks = legend_order,
                      labels = labels_n) 
 

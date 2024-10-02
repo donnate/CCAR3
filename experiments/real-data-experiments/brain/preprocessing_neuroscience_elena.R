@@ -12,7 +12,7 @@ library(CCA)
 library(tidyr)
 library(zoo)
 library(pracma)
-setwd("/scratch/cdonnat/group-CCA/")
+
 #store all values above diagonal of connectome matrices in matrix c
 
 activations <- read_csv("/Users/cdonnat/Downloads/activation_neuroscience.csv")

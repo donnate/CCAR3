@@ -26,11 +26,12 @@ seed <- as.numeric(args[1])
 print(seed)
 name_exp <- args[2]
 set.seed(seed)
-n <- as.numeric(args[3])
-strength_theta <- args[4]
-rs <- c(as.numeric(args[5]))
-p_val <- as.numeric(args[6])
-overlaps <- c(0)
+n <- 500
+strength_theta <- args[3]
+rs <- c(as.numeric(args[4]))
+p_val <- as.numeric(args[5])
+q_val <- as.numeric(args[6])
+overlaps <- c(1)
 props <- c(0)
 noise = 1
 seeds = 1:100
@@ -44,7 +45,7 @@ for(seed_n in seeds){
   print("Start loop")
   for(nnzeros in nnzero_values){
     for(p in p_val){
-      for (q in c(10, 30, 50, 80)){
+      for (q in q_vals){
         for (r in rs){
           if ( strength_theta == "high"){
             thetas <- diag(seq(0.9, 0.75, length.out = r))

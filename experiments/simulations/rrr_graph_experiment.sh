@@ -23,6 +23,6 @@ cd $SCRATCH/$USER/CCAR3/
 Rscript experiments/simulations/simu_graph.R $SLURM_ARRAY_TASK_ID $result_file $1 $2 $3 $4
 
 #1: strength theta
-#2: p
-#3: r
+#2: r
+#3: p
 #4: q
