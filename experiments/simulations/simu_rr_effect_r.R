@@ -30,7 +30,7 @@ n <- as.numeric(args[3])
 strength_theta <- args[4]
 p <- as.numeric(args[5])
 rs <- c(as.numeric(args[6]))
-q_vals <- c(as.numeric(args[7]))
+q_vals <- c(30)
 overlaps <- c(1)
 #props <- c(0, 0.1, 0.2)
 props <- c(0)
