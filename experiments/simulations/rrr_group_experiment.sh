@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name=array
-#SBATCH --output=logs/rr_array_%A_%a.out
-#SBATCH --error=logs/rr_array_%A_%a.err
+#SBATCH --job-name=array_group
+#SBATCH --output=logs/rr_grp_array_%A_%a.out
+#SBATCH --error=logs/rr_grp_array_%A_%a.err
 #SBATCH --array=1-5
 #SBATCH --time=24:00:00
 #SBATCH --partition=caslake
@@ -20,9 +20,9 @@ module load R/4.2.0
 result_file="normalized_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
 echo "Result file is ${result_file}"
 cd $SCRATCH/$USER/CCAR3/
-Rscript experiments/simulations/simu_rr.R $SLURM_ARRAY_TASK_ID $result_file $1 $2 $3 $4 $5
-#1: n
-#2: strength theta
-#3: p
-#4: r
-#5: q
+Rscript experiments/simulations/simu_group.R $SLURM_ARRAY_TASK_ID $result_file $1 $2 $3 $4
+
+#1: strength theta
+#2: p
+#3: r
+#4: q

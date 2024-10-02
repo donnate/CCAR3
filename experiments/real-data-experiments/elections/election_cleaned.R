@@ -15,6 +15,16 @@ source('experiments/alternative_methods/Witten_CrossValidation.R')
 source('experiments/alternative_methods/Waaijenborg.R')
 source("src/reduced_rank_regression.R")
 source("src/graph_reduced_rank_regression.R")
+source("experiments/simulations/generate_example_rrr.R")
+source('experiments/experiment_functions.R')
+source('experiments/alternative_methods/SAR.R')
+source('experiments/alternative_methods/Parkhomenko.R')
+source('experiments/alternative_methods/Witten_CrossValidation.R')
+source('experiments/alternative_methods/Waaijenborg.R')
+source('experiments/alternative_methods/scca_chao.R')
+source("experiments/evaluation.R")
+source("src/reduced_rank_regression.R")
+
 
 get_edge_incidence <- function(g, weight = 1){
   n_nodes = vcount(g)
@@ -35,7 +45,7 @@ get_edge_incidence <- function(g, weight = 1){
   return(Gamma)
 }
 
-data_presidents <- read_csv("experiments/data/elections/1976-2020-president.csv")
+data_presidents <- read_csv("experiments/real-data-experiments/elections/1976-2020-president.csv")
 data_presidents <- data_presidents %>% 
   filter(year > 2007, is.na(candidate) == FALSE) %>%
   mutate(percentage_votes = candidatevotes/ totalvotes)
@@ -53,16 +63,16 @@ all_candidates = unique(X$candidate)
 ### Maybe select candidates represented in at least 20 states
 X_bis <- mean(apply(X[, 3:ncol(X)] >0, 1, mean) > 0.1)
 
-candidate_data20 <- read_csv("experiments/real-data/elections/candidate_summary_2020.csv") %>% 
+candidate_data20 <- read_csv("experiments/real-data-experiments/elections/candidate_summary_2020.csv") %>% 
   filter(Cand_Office == "P")%>%
   mutate(year = 2020)
-candidate_data16 <- read_csv("experiments/real-data/elections/candidate_summary_2016.csv") %>% 
+candidate_data16 <- read_csv("experiments/real-data-experiments/elections/candidate_summary_2016.csv") %>% 
   filter(Cand_Office == "P") %>%
   mutate(year = 2016)
-candidate_data12 <- read_csv("experiments/real-data/elections/candidate_summary_2012.csv") %>% 
+candidate_data12 <- read_csv("experiments/real-data-experiments/elections/candidate_summary_2012.csv") %>% 
   filter(Cand_Office == "P")%>%
   mutate(year = 2012)
-candidate_data08 <- read_csv("experiments/real-data/elections/candidate_summary_2008.csv") %>% 
+candidate_data08 <- read_csv("experiments/real-data-experiments/elections/candidate_summary_2008.csv") %>% 
   filter(Cand_Office == "P")%>%
   mutate(year = 2008)
 candidate_data = rbind(candidate_data20,
@@ -92,7 +102,7 @@ sort(setdiff(unique(X$candidate_simplified),
 )
 )
 
-Y2 <- read_csv("experiments/data/elections/politicians_positions.csv")
+Y2 <- read_csv("experiments/real-data-experiments/elections/politicians_positions.csv")
 
 
 ##### Analysis of politicians scores vs opinions on certain questions
@@ -164,7 +174,7 @@ X_transformed <- X_transformed %>%
 
 
 #### Download the adjacency matrix
-A = read_csv("experiments/real-data/elections/state_adjacency.csv")
+A = read_csv("experiments/real-data-experiments/elections/state_adjacency.csv")
 A = A[,2:ncol(A)]
 ### erase Hawaii
 ind_hawaii = which(colnames(A) == "HI")
@@ -188,107 +198,188 @@ plot(g,
 Gamma <- get_edge_incidence(g, weight = 1)
 #### Now apply the algorithm
 r = 2
-
+correlation <- c()
 p = ncol(X_transformed)
 Y_transformed = scale(Y)
-
-folds = createFolds(1:nrow(X_transformed),5)
+nb_experiments = 10
+set.seed(12345)
 correlation <- c()
-lambda = 0.05
-correlation <-c()
-order = sample(1:length(folds), length(folds))
-for (i in  1:length(folds)){
-  index = order[ifelse(i < 18, i + 1, (i+1)%%18)]
-  index2 =order[ifelse(i < 17, i + 2, (i+2)%%18)]
-  print(c(i, index, index2))
-  for (lambda in 10^seq(from=-3, 1, length.out=30)){
-    final = CCA_graph_rrr(as.matrix(X_transformed)[-c(folds[[index]],
-                                                      folds[[index2]]),], 
-                          as.matrix(Y_transformed)[-c(folds[[index]],
-                                                      folds[[index2]]),],  
-                          Gamma, 
-                          Sx=NULL, Sy=NULL, Sxy = NULL,
-                          lambda = lambda, 
-                          Kx=NULL, r=r,
-                          rho=1, niter=2 * 1e4,
-                          do.scale = FALSE, lambda_Kx=0,
-                          thresh=1e-6,
-                          LW_Sy = FALSE)
-    
-    correlation <- rbind(
-      correlation,
-      c("CCA_graph_rrr",
-        lambda,
-        i,
-        diag(cov(as.matrix(X_transformed)[-c(folds[[index]],
-                                             folds[[index2]]),] %*% final$U,
-                 as.matrix(Y_transformed)[-c(folds[[index]],
-                                             folds[[index2]]),] %*%  final$V)),
-        apply(((as.matrix(X_transformed)[-c(folds[[index]],
-                                            folds[[index2]]),] %*% final$U) -
-                 (as.matrix(Y_transformed)[-c(folds[[index]],
-                                              folds[[index2]]),] %*%  final$V))^2, 2, mean),
-        diag(t(as.matrix(X_transformed)[folds[[index]][1],] %*% final$U) %*%
-               (as.matrix(Y_transformed)[folds[[index]][1],] %*%  final$V)),
-        ((as.matrix(X_transformed)[folds[[index]][1],] %*% final$U) -
-           (as.matrix(Y_transformed)[folds[[index]][1],] %*%  final$V))^2,
-        diag(t(as.matrix(X_transformed)[folds[[index2]][1],] %*% final$U) %*%
-               (as.matrix(Y_transformed)[folds[[index2]][1],] %*%  final$V)),
-        ((as.matrix(X_transformed)[folds[[index2]][1],] %*% final$U) -
-           (as.matrix(Y_transformed)[folds[[index2]][1],] %*%  final$V))^2
-      ))
-    
-  }
-  for (method in c("FIT_SAR_CV", "FIT_SAR_BIC", "Witten_Perm",
-                   "Witten.CV", "Waaijenborg-Author", "Waaijenborg-CV",
-                   "SCCA_Parkhomenko")){
-    
-    print(paste0("Starting ", method))
-    tryCatch({
-      test1<-additional_checks(as.matrix(X_transformed)[-c(
-                                                           folds[[index2]]),], as.matrix(Y_transformed)[-c(folds[[index2]]),],
-                               S=NULL, 
-                               rank=r, kfolds=5, 
-                               method.type = method,
-                               lambdax= 10^seq(-3,1, length.out = 30),
-                               lambday =  c(0))
+
+library(caret)
+for (exp in 1:nb_experiments){
+  folds = createFolds(1:nrow(X_transformed),5)
+  L = length(folds)
+  for (i in  1:length(folds)){
+    index = ifelse(i <= length(folds)-1, i +1,(i+1) %%L )
+    index2 =ifelse(i <= length(folds)-2, i +2 ,(i+2) %%L )
+    print(c(i, index, index2))
+    for (lambda in 10^seq(from=-3, 0, length.out=20)){
+      final = CCA_graph_rrr(as.matrix(X_transformed)[-c(folds[[index]],
+                                                        folds[[index2]]),], 
+                            as.matrix(Y_transformed)[-c(folds[[index]],
+                                                        folds[[index2]]),],  
+                            Gamma, 
+                            Sx=NULL, Sy=NULL, Sxy = NULL,
+                            lambda = lambda, 
+                            Kx=NULL, r=r,
+                            rho=1, niter=2 * 1e4,
+                            do.scale = FALSE, lambda_Kx=0,
+                            thresh=1e-6,
+                            LW_Sy = FALSE)
       
-      testX = diag(t(as.matrix(X_transformed)[folds[[index]][1],] %*% test1$u) %*%  (as.matrix(X_transformed)[folds[[index]][1],] %*% test1$u))^(-0.5)
-      testY = diag(t(as.matrix(Y_transformed)[folds[[index]][1],] %*% test1$v) %*%  (as.matrix(Y_transformed)[folds[[index]][1],] %*% test1$v))^(-0.5)
-      valX = diag(t(as.matrix(X_transformed)[folds[[index2]][1],] %*% test1$u) %*%  (as.matrix(X_transformed)[folds[[index2]][1],] %*% test1$u))^(-0.5)
-      valY = diag(t(as.matrix(Y_transformed)[folds[[index2]][1],] %*% test1$v) %*%  (as.matrix(Y_transformed)[folds[[index2]][1],] %*% test1$v))^(-0.5)
+      correlation <-  rbind(
+        correlation,
+        c("CCA_graph_rrr",
+          lambda,
+          exp,
+          i,
+          diag(cov(as.matrix(X_transformed)[-c(folds[[index]],
+                                               folds[[index2]]),] %*% final$U,
+                   as.matrix(Y_transformed)[-c(folds[[index]],
+                                               folds[[index2]]),] %*%  final$V)),
+          mean(((as.matrix(X_transformed)[folds[[index]],] %*% final$U) -
+                  (as.matrix(Y_transformed)[folds[[index]],] %*%  final$V))^2),
+          subdistance(as.matrix(X_transformed)[folds[[index]],] %*% final$U, 
+                      as.matrix(Y_transformed)[folds[[index]],] %*%  final$V),
+          diag(t(as.matrix(X_transformed)[folds[[index2]],] %*% final$U) %*%
+                 (as.matrix(Y_transformed)[folds[[index2]],] %*%  final$V)),
+          mean(((as.matrix(X_transformed)[folds[[index2]],] %*% final$U) -
+                  (as.matrix(Y_transformed)[folds[[index2]],] %*%  final$V))^2),
+          subdistance(as.matrix(X_transformed)[folds[[index2]],] %*% final$U, 
+                      as.matrix(Y_transformed)[folds[[index2]],] %*%  final$V)
+        ))
+           
+      
+      final = CCA_rrr(as.matrix(X_transformed)[-c(folds[[index]],
+                                                        folds[[index2]]),], 
+                            as.matrix(Y_transformed)[-c(folds[[index]],
+                                                        folds[[index2]]),],  
+                      lambda = lambda, 
+                      Kx=NULL, r=r,
+                      rho=1, niter=2 * 1e4,
+                      do.scale = FALSE, lambda_Kx=0,
+                      thresh=1e-5,
+                      solver= "ADMM",
+                      LW_Sy = TRUE)
       
       correlation <- rbind(
         correlation,
-        c(method,
+        c("CCA_rrr",
           lambda,
+          exp,
           i,
           diag(cov(as.matrix(X_transformed)[-c(folds[[index]],
-                                               folds[[index2]]),] %*% test1$u,
+                                               folds[[index2]]),] %*% final$U,
                    as.matrix(Y_transformed)[-c(folds[[index]],
-                                               folds[[index2]]),] %*%  test1$v)),
-          apply(((as.matrix(X_transformed)[-c(folds[[index]],
-                                              folds[[index2]]),] %*% test1$u) -
-                   (as.matrix(Y_transformed)[-c(folds[[index]],
-                                                folds[[index2]]),] %*%  test1$v))^2, 2, mean),
-          diag(t(as.matrix(X_transformed)[folds[[index]][1],] %*% test1$u) %*%
-                 (as.matrix(Y_transformed)[folds[[index]][1],] %*%  test1$v)),
-          ((as.matrix(X_transformed)[folds[[index]][1],] %*% test1$u) -
-             (as.matrix(Y_transformed)[folds[[index]][1],] %*%  test1$v))^2,
-          diag(t(as.matrix(X_transformed)[folds[[index2]][1],] %*% test1$u) %*%
-                 (as.matrix(Y_transformed)[folds[[index2]][1],] %*%  test1$v)),
-          ((as.matrix(X_transformed)[folds[[index2]][1],] %*% test1$u) -
-             (as.matrix(Y_transformed)[folds[[index2]][1],] %*%  test1$v))^2
+                                               folds[[index2]]),] %*%  final$V)),
+          mean(((as.matrix(X_transformed)[folds[[index]],] %*% final$U) -
+                  (as.matrix(Y_transformed)[folds[[index]],] %*%  final$V))^2),
+          subdistance(as.matrix(X_transformed)[folds[[index]],] %*% final$U, 
+                      as.matrix(Y_transformed)[folds[[index]],] %*%  final$V),
+          diag(t(as.matrix(X_transformed)[folds[[index2]],] %*% final$U) %*%
+                 (as.matrix(Y_transformed)[folds[[index2]],] %*%  final$V)),
+          mean(((as.matrix(X_transformed)[folds[[index2]],] %*% final$U) -
+                  (as.matrix(Y_transformed)[folds[[index2]],] %*%  final$V))^2),
+          subdistance(as.matrix(X_transformed)[folds[[index2]],] %*% final$U, 
+                      as.matrix(Y_transformed)[folds[[index2]],] %*%  final$V)
         ))
-    }, error = function(e) {
-      # Print the error message
-      cat("Error occurred in method", method, ":", conditionMessage(e), "\n")
-      # Skip to the next iteration
-    })
-    
+      
+    }
+    for (method in c("FIT_SAR_CV", "FIT_SAR_BIC", "Witten_Perm",
+                     "Witten.CV", "Waaijenborg-Author", "Waaijenborg-CV",
+                     "SCCA_Parkhomenko", "Fantope", "SGCA")){
+      
+      print(paste0("Starting ", method))
+      tryCatch({
+        test1<-additional_checks(as.matrix(X_transformed)[-c(
+          folds[[index2]]),], as.matrix(Y_transformed)[-c(folds[[index2]]),],
+          S=NULL, 
+          rank=r, kfolds=5, 
+          method.type = method,
+          lambdax= 10^seq(-3,1, length.out = 30),
+          lambday =  c(0))
+        
+        testX = diag(t(as.matrix(X_transformed)[folds[[index]][1],] %*% test1$u) %*%  (as.matrix(X_transformed)[folds[[index]][1],] %*% test1$u))^(-0.5)
+        testY = diag(t(as.matrix(Y_transformed)[folds[[index]][1],] %*% test1$v) %*%  (as.matrix(Y_transformed)[folds[[index]][1],] %*% test1$v))^(-0.5)
+        valX = diag(t(as.matrix(X_transformed)[folds[[index2]],] %*% test1$u) %*%  (as.matrix(X_transformed)[folds[[index2]],] %*% test1$u))^(-0.5)
+        valY = diag(t(as.matrix(Y_transformed)[folds[[index2]],] %*% test1$v) %*%  (as.matrix(Y_transformed)[folds[[index2]],] %*% test1$v))^(-0.5)
+        
+        correlation <- rbind(
+          correlation,
+          c(method,
+            NA,
+            exp,
+            i,
+            diag(cov(as.matrix(X_transformed)[-c(folds[[index]],
+                                                 folds[[index2]]),] %*% test1$u,
+                     as.matrix(Y_transformed)[-c(folds[[index]],
+                                                 folds[[index2]]),] %*% test1$v)),
+            mean(((as.matrix(X_transformed)[folds[[index]],] %*% test1$u) -
+                    (as.matrix(Y_transformed)[folds[[index]],] %*%  test1$v))^2),
+            subdistance(as.matrix(X_transformed)[folds[[index]],] %*% test1$u, 
+                        as.matrix(Y_transformed)[folds[[index]],] %*%  test1$v),
+            diag(t(as.matrix(X_transformed)[folds[[index2]],] %*% test1$u) %*%
+                   (as.matrix(Y_transformed)[folds[[index2]],] %*%  test1$v)),
+            mean(((as.matrix(X_transformed)[folds[[index2]],] %*% test1$u) -
+                    (as.matrix(Y_transformed)[folds[[index2]],] %*%  test1$v))^2),
+            subdistance(as.matrix(X_transformed)[folds[[index2]],] %*% test1$u, 
+                        as.matrix(Y_transformed)[folds[[index2]],] %*%  test1$v)
+          ))
+      }, error = function(e) {
+        # Print the error message
+        cat("Error occurred in method", method, ":", conditionMessage(e), "\n")
+        # Skip to the next iteration
+      })
+      
+    }
+    write_csv(data.frame(correlation), "~/Downloads/election_new_trial2.csv")
   }
 }
+
 STOP
+correlation_df = read_csv( "~/Downloads/election_new_trial2.csv")
+colnames(correlation_df) <- c("method", "lambda", "exp", 
+                              "train_fold",
+                              sapply(1:r, function(x){paste0("cov_train",x)}),
+                              "MSE_test",
+                              "dist_test",
+                              sapply(1:r, function(x){paste0("cov_val",x)}),
+                              "MSE_val",
+                              "dist_val")
+for (i in 1:nrow(correlation_df)){
+  correlation_df[i, which(correlation_df[i, 5:ncol(correlation_df)] <1e-6)] = NA
+}
+
+summ1 =  correlation_df %>%
+  group_by(method, lambda, exp) %>%
+  summarise_all(mean)  %>%
+  drop_na() %>%
+  slice_min(MSE_test, n=1) %>%
+  ungroup() %>%
+  drop_na()
+
+ggplot(summ1,
+       aes(x=method, y=MSE_val )) +
+  geom_boxplot()
+
+summary_correlation = summ1 %>%
+  group_by(method) %>%
+  summarise(counts =c(),
+            test_cor= median(test_cor),
+            test_mse = median(test_mse),
+            test_dist = median(test_dist),
+            val_cor= mean(val_cor),
+            val_mse = mean(val_mse),
+            val_dist = mean(val_dist))%>%
+  arrange((val_mse)) %>% ungroup()
+
+summ2 = summary_correlation %>%
+  group_by(method) %>%
+  summarise_all(mean) %>%
+  arrange(dist_val)
+
+
+
 
 final = CCA_graph_rrr.CV(as.matrix(X_transformed), as.matrix(Y_transformed),  
                       Gamma, 
