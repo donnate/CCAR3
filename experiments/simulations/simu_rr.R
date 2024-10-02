@@ -216,7 +216,7 @@ for (seed_n in seeds){
                                          lambda =0.01, Kx=NULL,
                                          r=r,
                                          highdim=TRUE,
-                                         solver="ADMM",
+                                         solver="rrr",
                                          LW_Sy = LW_Sy, do.scale=TRUE,
                                          thresh = 1e-6)
 		  })
@@ -234,7 +234,7 @@ for (seed_n in seeds){
                                          lambda =lambda_chosen, Kx=NULL,
                                          r=r,
                                          highdim=TRUE,
-                                         solver="ADMM",
+                                         solver="rrr",
                                          LW_Sy = LW_Sy, do.scale=TRUE,
                                          thresh = 1e-6)
                       res_alt$U[which(is.na(res_alt$U))] <- 0
