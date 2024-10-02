@@ -150,7 +150,7 @@ for (seed_n in seeds){
                     res_alt = CCA_rrr.CV(X, Y,
                                          r=r, Kx = NULL, lambda_Kx = 0,
                                          param_lambda=c(10^seq(-3, 1, length.out = 30)),
-                                         kfolds=5, solver="rrr", LW_Sy = LW_Sy, 
+                                         kfolds=5, solver="ADMM", LW_Sy = LW_Sy, 
                                          do.scale = TRUE,
                                          rho=1, niter=2 * 1e4, thresh = 1e-6)
                   })
@@ -168,7 +168,7 @@ for (seed_n in seeds){
                                          lambda =lambda_chosen, Kx=NULL, 
                                          r=r, 
                                          highdim=TRUE,
-                                         solver="rrr",
+                                         solver="ADNN",
                                          LW_Sy = LW_Sy, do.scale=TRUE,
                                          thresh = 1e-6)
                       res_alt$U[which(is.na(res_alt$U))] <- 0
@@ -180,6 +180,69 @@ for (seed_n in seeds){
                       
                     }
                   }
+                result <- rbind(result, data.frame(evaluate(gen$Xnew, gen$Ynew,
+                                                                                 Uhat,
+                                                                                 Vhat[, 1:r],
+                                                                                 gen$u, gen$v,
+                                                                                 Sigma_hat_sqrt = Sigma_hat_sqrt,
+                                                                                 Sigma0_sqrt = Sigma0_sqrt),
+                                                                        "noise" = noise,
+                                                                        method = "RRR-ADMM-opt",
+                                                                        "prop_missing" = prop_missing,
+                                                                        "nnzeros" = nnzeros,
+                                                                        "theta_strength" = strength_theta,
+                                                                        "overlapping_amount" = overlapping_amount,
+                                                                        "r_pca" = r_pca,
+                                                                        "n" = n,
+                                                                        "exp" = seed * 100 + seed_n,
+                                                                        "normalize_diagonal" = normalize_diagonal,
+                                                                        "lambda_opt" = lambda_chosen,
+                                                                        "time" = start_time_alt3[[3]]
+                  )
+                  )
+                }, error = function(e) {
+                  # Print the error message
+                  cat("Error occurred in CVXR CV:", conditionMessage(e), "\n")
+                  # Skip to the next iteration
+                })
+                  
+                  print(paste0("Starting ", "Alt opt") )
+                  tryCatch({
+                    start_time_alt3 <- system.time({
+                      res_alt = CCA_rrr.CV(X, Y,
+                                           r=r, Kx = NULL, lambda_Kx = 0,
+                                           param_lambda=c(10^seq(-3, 1, length.out = 30)),
+                                           kfolds=5, solver="rrr", LW_Sy = LW_Sy, 
+                                           do.scale = TRUE,
+                                           rho=1, niter=2 * 1e4, thresh = 1e-6)
+                    })
+                    res_alt$ufinal[which(is.na( res_alt$ufinal))] <- 0
+                    res_alt$vfinal[which(is.na( res_alt$vfinal))] <- 0
+                    Uhat <- res_alt$ufinal[, 1:r]
+                    Vhat <- res_alt$vfinal[, 1:r]
+                    lambda_chosen = res_alt$lambda
+                    if (sum(apply(res_alt$ufinal, 1, function(x){sum(x!=0)}) >0) <r){
+                      #### Choose another lambda
+                      while(sum(apply(Uhat, 1, function(x){sum(x!=0)}) >0) <r){
+                        lambda_chosen = lambda_chosen / 2
+                        #start_time_alt <- system.time({
+                        res_alt <- CCA_rrr(X, Y, Sx = NULL, Sy=NULL,
+                                           lambda =lambda_chosen, Kx=NULL, 
+                                           r=r, 
+                                           highdim=TRUE,
+                                           solver="rrr",
+                                           LW_Sy = LW_Sy, do.scale=TRUE,
+                                           thresh = 1e-6)
+                        res_alt$U[which(is.na(res_alt$U))] <- 0
+                        res_alt$V[which(is.na(res_alt$v))] <- 0
+                        Uhat <- res_alt$U[, 1:r]
+                        Vhat <- res_alt$V[, 1:r]
+                        
+                        #})
+                        
+                      }
+                    }
+                    
                   result <- rbind(result, data.frame(evaluate(gen$Xnew, gen$Ynew,
                                                               Uhat,
                                                               Vhat[, 1:r],
@@ -187,7 +250,7 @@ for (seed_n in seeds){
                                                               Sigma_hat_sqrt = Sigma_hat_sqrt,
                                                               Sigma0_sqrt = Sigma0_sqrt),
                                                      "noise" = noise,
-                                                     method = "RRR-ADMM-opt",
+                                                     method = "RRR-rrr-opt",
                                                      "prop_missing" = prop_missing,
                                                      "nnzeros" = nnzeros,
                                                      "theta_strength" = strength_theta,
@@ -212,7 +275,7 @@ for (seed_n in seeds){
 		print(paste0("Starting ", "Alt opt") )
                 tryCatch({
                   start_time_alt4 <- system.time({
-                                        res_alt <- CCA_rrr(X, Y, Sx = NULL, Sy=NULL,
+                                        res_alt1 <- CCA_rrr(X, Y, Sx = NULL, Sy=NULL,
                                          lambda =0.01, Kx=NULL,
                                          r=r,
                                          highdim=TRUE,
@@ -220,34 +283,13 @@ for (seed_n in seeds){
                                          LW_Sy = LW_Sy, do.scale=TRUE,
                                          thresh = 1e-6)
 		  })
-                  res_alt$ufinal[which(is.na( res_alt$ufinal))] <- 0
-                  res_alt$vfinal[which(is.na( res_alt$vfinal))] <- 0
-                  Uhat <- res_alt$ufinal[, 1:r]
-                  Vhat <- res_alt$vfinal[, 1:r]
-                  lambda_chosen = res_alt$lambda
-                  if (sum(apply(res_alt$ufinal, 1, function(x){sum(x!=0)}) >0) <r){
-                    #### Choose another lambda
-                    while(sum(apply(Uhat, 1, function(x){sum(x!=0)}) >0) <r){
-                      lambda_chosen = lambda_chosen / 2
-                      #start_time_alt <- system.time({
-                      res_alt <- CCA_rrr(X, Y, Sx = NULL, Sy=NULL,
-                                         lambda =lambda_chosen, Kx=NULL,
-                                         r=r,
-                                         highdim=TRUE,
-                                         solver="ADMM",
-                                         LW_Sy = LW_Sy, do.scale=TRUE,
-                                         thresh = 1e-6)
-                      res_alt$U[which(is.na(res_alt$U))] <- 0
-                      res_alt$V[which(is.na(res_alt$v))] <- 0
-                      Uhat <- res_alt$U[, 1:r]
-                      Vhat <- res_alt$V[, 1:r]
-  #})
-
-                    }
-                  }
+                  res_alt1$ufinal[which(is.na( res_alt1$ufinal))] <- 0
+                  res_alt1$vfinal[which(is.na( res_alt1$vfinal))] <- 0
+                  Uhat <- res_alt1$U[, 1:r]
+                  Vhat <- res_alt1$V[, 1:r]
                   result <- rbind(result, data.frame(evaluate(gen$Xnew, gen$Ynew,
                                                               Uhat,
-                                                              Vhat[, 1:r],
+                                                              Vhat,
                                                               gen$u, gen$v,
                                                               Sigma_hat_sqrt = Sigma_hat_sqrt,
                                                               Sigma0_sqrt = Sigma0_sqrt),
