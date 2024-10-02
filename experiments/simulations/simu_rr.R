@@ -150,7 +150,7 @@ for (seed_n in seeds){
                     res_alt = CCA_rrr.CV(X, Y,
                                          r=r, Kx = NULL, lambda_Kx = 0,
                                          param_lambda=c(10^seq(-3, 1, length.out = 30)),
-                                         kfolds=5, solver="ADMM", LW_Sy = LW_Sy, 
+                                         kfolds=5, solver="rrr", LW_Sy = LW_Sy, 
                                          do.scale = TRUE,
                                          rho=1, niter=2 * 1e4, thresh = 1e-6)
                   })
@@ -168,7 +168,7 @@ for (seed_n in seeds){
                                          lambda =lambda_chosen, Kx=NULL, 
                                          r=r, 
                                          highdim=TRUE,
-                                         solver="ADMM",
+                                         solver="rrr",
                                          LW_Sy = LW_Sy, do.scale=TRUE,
                                          thresh = 1e-6)
                       res_alt$U[which(is.na(res_alt$U))] <- 0
