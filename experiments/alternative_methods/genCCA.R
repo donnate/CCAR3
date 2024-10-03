@@ -6,8 +6,7 @@ library(pracma)
 #library(rsample)
 
 
-source("/Users/cdonnat/Documents/group-CCA/src/glmgen.R")
-source("/Users/cdonnat/Documents/group-CCA/experiments/alternative_methods/SAR.R")
+
 genCCA<-function(X, Y,
                  Da, Db,
                  lambdaA1=NULL,
