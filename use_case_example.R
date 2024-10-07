@@ -16,7 +16,7 @@ source('experiments/alternative_methods/Witten_CrossValidation.R')
 source('experiments/alternative_methods/Waaijenborg.R')
 source('experiments/alternative_methods/scca_chao.R')
 source("experiments/evaluation.R")
-
+source("src/reduced_rank_regression.R")
 
 
 
@@ -30,6 +30,7 @@ q <- 5
 rs <- 2
 #props <- c(0, 0.1, 0.2)
 props <- c(0)
+prop_missing = 0
 noise = 1
 seeds = 1:50
 normalize_diagonal = TRUE
@@ -100,7 +101,7 @@ if (p < n){
                                     "exp" = seed * 100 + seed_n,
                                     "normalize_diagonal" = normalize_diagonal,
                                     "lambda_opt" = 0,
-                                    "time" = start_time_rrr[[1]]))
+                                    "time" = start_time_rrr[[3]]))
 }
 
 
@@ -191,7 +192,7 @@ tryCatch({
                                      "exp" = seed * 100 + seed_n,
                                      "normalize_diagonal" = normalize_diagonal,
                                      "lambda_opt" = lambda_chosen,
-                                     "time" = start_time_alt3[[1]]
+                                     "time" = start_time_alt3[[3]]
   )
   )
 }, error = function(e) {
@@ -232,7 +233,7 @@ for (method in c("FIT_SAR_CV", "FIT_SAR_BIC", "Witten_Perm",
                                        "exp" = seed * 100 + seed_n,
                                        "normalize_diagonal" = normalize_diagonal,
                                        "lambda_opt" = 0,
-                                       "time" = start_time_additional_method[[1]]
+                                       "time" = start_time_additional_method[[3]]
     )
     )
   }, error = function(e) {
