@@ -33,6 +33,7 @@ props <- c(0)
 prop_missing = 0
 noise = 1
 seeds = 1:50
+seed_n = 0
 normalize_diagonal = TRUE
 LW_Sy = TRUE
 nnzero_values = c(10)
